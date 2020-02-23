@@ -17,27 +17,31 @@ public class WebCrawler extends JFrame {
 
     private final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    private final JTextArea textArea;
-    private final JScrollPane textAreaScrollPane;
+    private final JScrollPane tableScrollPane;
     private final JTextField urlTextField;
     private final JButton runButton;
     private final JLabel titleLabel;
+    private final String[] columnNames = { "URL", "Title"}; 
+    private GridBagConstraints c;
 
     private URL url;
+    private String[][] data;
+    private JTable prevTable;
 
     private List<String> getAllHrefs(String input) {
         List<String> results = new ArrayList<>();
-        Matcher m = Pattern.compile("(?<=href=[\"\']).*?(?=[\"\'])").matcher(input);
+        Matcher m = Pattern.compile("(?<=href=[\'\"]?)[^\\s\'\">]+").matcher(input);
         while (m.find()){
             results.add(m.group());
         }
         return results;
     }
 
-    private List<String> formatListOfHrefs(List<String> input) {
+    private List<String[]> formatListOfHrefs(List<String> input) {
         String protocol = this.url.getProtocol();
-        String start = protocol + "://" + this.url.getHost();
-        return input.stream()
+        String start = protocol + "://" + this.url.getHost();        
+        List<String[]> result = new ArrayList<>();
+        List<String> formatted = input.stream()
         .map(href -> {
             if (href.startsWith("//")){
                 return protocol + "://" + href.substring(2);
@@ -53,12 +57,30 @@ public class WebCrawler extends JFrame {
                     return null;
                 }
             }})
-        .filter(x -> x != null)
+        .filter(href -> href != null)
+        .distinct()
+        .filter(href -> {
+            try {
+                URL u = new URL(href);
+                return List.of(u.openConnection().getContentType().replace("\\s","").split(";")).contains("text/html");            
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        })
         .collect(Collectors.toList());
+        for (String i : formatted){            
+            try {
+                result.add(new String[] {i, getTitleFromHTML(getTextFromURL(new URL(i)))});
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
     }
 
     private String getTextFromURL(URL url) {
-        final String siteText;
+        String siteText = "";
         try {
             final InputStream inputStream = url.openStream();
             final BufferedReader reader = new BufferedReader(
@@ -73,8 +95,7 @@ public class WebCrawler extends JFrame {
             reader.close();
             siteText = stringBuilder.toString();
         } catch (Exception e) {
-            e.printStackTrace();
-            return "ERROR\n" + e.getMessage();
+            System.err.println(url.getPath() + "\n" + e.getMessage());
         }
         return siteText;
     }
@@ -83,7 +104,7 @@ public class WebCrawler extends JFrame {
 
         setLayout(new GridBagLayout());
 
-        GridBagConstraints c = new GridBagConstraints();
+        c = new GridBagConstraints();
         c.insets = new Insets(10, 10, 0, 10);
         c.fill = GridBagConstraints.BOTH;
 
@@ -107,11 +128,11 @@ public class WebCrawler extends JFrame {
         c.weighty = 1;
         c.gridwidth = 3;
         c.insets = new Insets(10, 10, 10, 10);
-        add(textAreaScrollPane, c);
+        add(tableScrollPane, c);
 
     }
 
-    void setText(String text) {
+    String getTitleFromHTML(String text) {        
         String title = "";
         try {
             Pattern p = Pattern.compile("(?<=<title>).*?(?=</title>)");
@@ -121,9 +142,21 @@ public class WebCrawler extends JFrame {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }        
+        return title;
+    }
+
+    void setText(String text) {
+        String title = getTitleFromHTML(text);
         titleLabel.setText(title);
-        textArea.setText(String.join("\n\n",formatListOfHrefs(getAllHrefs(text))));
+        Object[] a = formatListOfHrefs(getAllHrefs(text)).toArray();
+        this.data = new String[a.length][];
+        for (int i = 0; i < a.length; i++){
+            this.data[i] = (String[]) a[i];
+        } 
+        
+        this.prevTable = new JTable(this.data, columnNames);
+        tableScrollPane.setViewportView(this.prevTable);
     }
 
     void setUrl(String text){
@@ -147,15 +180,12 @@ public class WebCrawler extends JFrame {
         setLocationRelativeTo(null);        
         setTitle("Web Crawler");
 
-        textArea = new JTextArea();
-        textArea.setName("HtmlTextArea");
-        // textArea.setEnabled(false);
-        textArea.setLineWrap(true);
-
-        textAreaScrollPane = new JScrollPane(textArea);
+        this.prevTable = new JTable();
+        tableScrollPane = new JScrollPane(this.prevTable);
 
         urlTextField = new JTextField();
         urlTextField.setName("UrlTextField");
+
 
         runButton = new JButton("Get Text!");
         runButton.setName("RunButton");
