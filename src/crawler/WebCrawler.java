@@ -39,39 +39,27 @@ public class WebCrawler extends JFrame {
         return results;
     }
 
-    private List<String[]> formatListOfHrefs(List<String> input) {
-        String protocol = url.getProtocol();
-        final String start;
-        if (url.getHost().contains("localhost")){
-            start = protocol + "://" + url.getHost() + ":" + url.getPort();
-        } else {            
-            start = protocol + "://" + url.getHost();            
+    private String resolve(URL base, String relUrl) throws MalformedURLException {
+        if (relUrl.startsWith("?"))
+            relUrl = base.getPath() + relUrl;
+        if (relUrl.indexOf('.') == 0 && base.getFile().indexOf('/') != 0) {
+            base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
         }
+        return new URL(base, relUrl).toString();
+    }
+
+    private List<String[]> formatListOfHrefs(List<String> input) {
         List<String[]> result = new ArrayList<>();
         List<String> formatted = input.stream()
         .map(href -> {
             try {
-                new URL(href);
-                return href;
-            } catch (MalformedURLException  e) {
-                if (href.startsWith("//")) {
-                    return protocol + "://" + href.substring(2);
-                } else if (href.startsWith("/")) {
-                    return start + "/" + href.substring(1);
-                } else if (!href.startsWith(protocol)) {
-                    if (href.startsWith(url.getHost())) {
-                        return protocol + "://" + href;
-                    }
-                    return start + "/" + href;
-                }                
-                try {
-                    new URL(href);
-                    return href;
-                } catch (MalformedURLException ignored) {
-                    return null;
-                }
+                return resolve(url, href);                
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
-        }).filter(Objects::nonNull).distinct().filter(href -> {
+        })
+        .filter(Objects::nonNull).distinct().filter(href -> {
             try {
                 URL u = new URL(href);
                 return List.of(u.openConnection().getContentType().replace("\\s", "").split(";")).contains("text/html");
@@ -89,6 +77,8 @@ public class WebCrawler extends JFrame {
         }
         return result;
     }
+
+    
 
     private String getTextFromURL(URL url) {
         String siteText = "";
