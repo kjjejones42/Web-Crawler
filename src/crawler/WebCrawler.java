@@ -24,12 +24,13 @@ public class WebCrawler extends JFrame {
     private final JButton runButton;
     private final JLabel titleLabel;
     private final String[] columnNames = { "URL", "Title" };
-    private final JTable dataTable;
+    private final JTable titlesTable;
 
     private URL url;
 
     private List<String> getAllHrefs(String input) {
         List<String> results = new ArrayList<>();
+        results.add(url.toString());
         Matcher m = Pattern.compile("(?<=href=['\"]?)[^\\s'\">]+").matcher(input);
         while (m.find()) {
             results.add(m.group());
@@ -39,22 +40,26 @@ public class WebCrawler extends JFrame {
 
     private List<String[]> formatListOfHrefs(List<String> input) {
         String protocol = url.getProtocol();
-        String start = protocol + "://" + url.getHost();
+        String start = protocol + "://" + url.getHost() + ":" + url.getPort();
         List<String[]> result = new ArrayList<>();
         List<String> formatted = input.stream().map(href -> {
             if (href.startsWith("//")) {
                 return protocol + "://" + href.substring(2);
             } else if (href.startsWith("/")) {
                 return start + "/" + href.substring(1);
-            } else if (href.startsWith("#")) {
-                return start + href;
-            } else {
-                try {
-                    new URL(href);
-                    return href;
-                } catch (Exception e) {
-                    return null;
+            } else if (!href.startsWith(protocol)) {
+                if (href.startsWith(url.getHost())) {
+                    return protocol + "://" + href;
                 }
+                return start + "/" + href;
+            }
+            return href;
+        }).map(href -> {
+            try {
+                new URL(href);
+                return href;
+            } catch (Exception e) {
+                return null;
             }
         }).filter(Objects::nonNull).distinct().filter(href -> {
             try {
@@ -150,7 +155,7 @@ public class WebCrawler extends JFrame {
         for (int i = 0; i < a.length; i++) {
             data[i] = (String[]) a[i];
         }
-        dataTable.setModel(new DefaultTableModel(data, columnNames));
+        titlesTable.setModel(new DefaultTableModel(data, columnNames));
     }
 
     void setUrl(String text) {
@@ -174,8 +179,10 @@ public class WebCrawler extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Web Crawler");
 
-        dataTable = new JTable();
-        tableScrollPane = new JScrollPane(dataTable);
+        titlesTable = new JTable();
+        titlesTable.setName("TitlesTable");
+        titlesTable.setEnabled(false);
+        tableScrollPane = new JScrollPane(titlesTable);
 
         urlTextField = new JTextField();
         urlTextField.setName("UrlTextField");
