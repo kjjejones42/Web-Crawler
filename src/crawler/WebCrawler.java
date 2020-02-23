@@ -1,11 +1,15 @@
 package crawler;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.net.URL;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class WebCrawler extends JFrame {
 
@@ -19,10 +23,44 @@ public class WebCrawler extends JFrame {
     private final JButton runButton;
     private final JLabel titleLabel;
 
-    private String getTextFromURL(String input) {
+    private URL url;
+
+    private List<String> getAllHrefs(String input) {
+        List<String> results = new ArrayList<>();
+        Matcher m = Pattern.compile("(?<=href=[\"\']).*?(?=[\"\'])").matcher(input);
+        while (m.find()){
+            results.add(m.group());
+        }
+        return results;
+    }
+
+    private List<String> formatListOfHrefs(List<String> input) {
+        String protocol = this.url.getProtocol();
+        String start = protocol + "://" + this.url.getHost();
+        return input.stream()
+        .map(href -> {
+            if (href.startsWith("//")){
+                return protocol + "://" + href.substring(2);
+            } else if (href.startsWith("/")){
+                return start + "/" + href.substring(1);
+            } else if (href.startsWith("#")) {
+                return start + href;
+            } else {
+                try {
+                    new URL(href);                    
+                    return href;
+                } catch (Exception e) {
+                    return null;
+                }
+            }})
+        .filter(x -> x != null)
+        .collect(Collectors.toList());
+    }
+
+    private String getTextFromURL(URL url) {
         final String siteText;
         try {
-            final InputStream inputStream = new URL(input).openStream();
+            final InputStream inputStream = url.openStream();
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final StringBuilder stringBuilder = new StringBuilder();
@@ -85,7 +123,16 @@ public class WebCrawler extends JFrame {
             e.printStackTrace();
         }
         titleLabel.setText(title);
-        textArea.setText(text);
+        textArea.setText(String.join("\n\n",formatListOfHrefs(getAllHrefs(text))));
+    }
+
+    void setUrl(String text){
+        try {
+            this.url = new URL(text);            
+        } catch (Exception e) {
+            e.printStackTrace();
+            this.url = null;
+        }
     }
 
     public WebCrawler() {
@@ -102,7 +149,7 @@ public class WebCrawler extends JFrame {
 
         textArea = new JTextArea();
         textArea.setName("HtmlTextArea");
-        textArea.setEnabled(false);
+        // textArea.setEnabled(false);
         textArea.setLineWrap(true);
 
         textAreaScrollPane = new JScrollPane(textArea);
@@ -112,8 +159,10 @@ public class WebCrawler extends JFrame {
 
         runButton = new JButton("Get Text!");
         runButton.setName("RunButton");
-        runButton.addActionListener(e ->
-            setText(getTextFromURL(urlTextField.getText()))
+        runButton.addActionListener(e -> {
+            setUrl(urlTextField.getText());
+            setText(getTextFromURL(this.url));
+        }
         );
 
         titleLabel = new JLabel();
