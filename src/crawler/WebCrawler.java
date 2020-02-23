@@ -70,7 +70,7 @@ public class WebCrawler extends JFrame {
     }
 
     private List<String[]> formatListOfHrefs(List<String> input) {
-        return input.stream()
+        return input.parallelStream()
             .map(href -> relURLToAbsURL(url, href))
             .filter(Objects::nonNull)
             .distinct()
