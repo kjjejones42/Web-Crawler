@@ -14,18 +14,17 @@ public class WebCrawler extends JFrame {
 
     private String getTextFromURL(String input) {
         final String siteText;
-        try {                
-            final String url = input; 
-            final InputStream inputStream = new URL(url).openStream();
+        try {
+            final InputStream inputStream = new URL(input).openStream();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final StringBuilder stringBuilder = new StringBuilder();
-            
+
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
                 stringBuilder.append(nextLine);
                 stringBuilder.append(LINE_SEPARATOR);
             }
-            reader.close();            
+            reader.close();
             siteText = stringBuilder.toString();
         } catch (Exception e) {
             e.printStackTrace();
@@ -36,15 +35,16 @@ public class WebCrawler extends JFrame {
 
     public WebCrawler() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());            
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 300);
-        
-        setLayout(new GridBagLayout());        
+        setSize(720, 480);
+        setLocationRelativeTo(null);
+
+        setLayout(new GridBagLayout());
 
 
         JTextArea textArea = new JTextArea();
@@ -56,12 +56,10 @@ public class WebCrawler extends JFrame {
 
         JTextField urlTextField = new JTextField();
         urlTextField.setName("UrlTextField");
-        
+
         JButton runButton = new JButton("Get Text!");
-        runButton.setName("runButton");
-        runButton.addActionListener(e -> {
-            textArea.setText(getTextFromURL(urlTextField.getText()));
-        });
+        runButton.setName("RunButton");
+        runButton.addActionListener(e -> textArea.setText(getTextFromURL(urlTextField.getText())));
 
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(10,10,0,10);
@@ -80,7 +78,7 @@ public class WebCrawler extends JFrame {
         c.gridwidth = 2;
         c.insets = new Insets(10,10,10,10);
         add(textAreaScrollPane, c);
-        
+
         setTitle("Window");
 
         setVisible(true);
