@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.net.MalformedURLException;
 
 public class WebCrawler extends JFrame {
 
@@ -40,26 +41,35 @@ public class WebCrawler extends JFrame {
 
     private List<String[]> formatListOfHrefs(List<String> input) {
         String protocol = url.getProtocol();
-        String start = protocol + "://" + url.getHost() + ":" + url.getPort();
+        final String start;
+        if (url.getHost().contains("localhost")){
+            start = protocol + "://" + url.getHost() + ":" + url.getPort();
+        } else {            
+            start = protocol + "://" + url.getHost();            
+        }
         List<String[]> result = new ArrayList<>();
-        List<String> formatted = input.stream().map(href -> {
-            if (href.startsWith("//")) {
-                return protocol + "://" + href.substring(2);
-            } else if (href.startsWith("/")) {
-                return start + "/" + href.substring(1);
-            } else if (!href.startsWith(protocol)) {
-                if (href.startsWith(url.getHost())) {
-                    return protocol + "://" + href;
-                }
-                return start + "/" + href;
-            }
-            return href;
-        }).map(href -> {
+        List<String> formatted = input.stream()
+        .map(href -> {
             try {
                 new URL(href);
                 return href;
-            } catch (Exception e) {
-                return null;
+            } catch (MalformedURLException  e) {
+                if (href.startsWith("//")) {
+                    return protocol + "://" + href.substring(2);
+                } else if (href.startsWith("/")) {
+                    return start + "/" + href.substring(1);
+                } else if (!href.startsWith(protocol)) {
+                    if (href.startsWith(url.getHost())) {
+                        return protocol + "://" + href;
+                    }
+                    return start + "/" + href;
+                }                
+                try {
+                    new URL(href);
+                    return href;
+                } catch (MalformedURLException ignored) {
+                    return null;
+                }
             }
         }).filter(Objects::nonNull).distinct().filter(href -> {
             try {
