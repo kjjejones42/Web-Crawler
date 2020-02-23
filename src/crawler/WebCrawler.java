@@ -18,9 +18,6 @@ public class WebCrawler extends JFrame {
     private final JTextField urlTextField;
     private final JButton runButton;
     private final JLabel titleLabel;
-    
-    private String text;
-    private String title;
 
     private String getTextFromURL(String input) {
         final String siteText;
@@ -43,8 +40,8 @@ public class WebCrawler extends JFrame {
         return siteText;
     }
 
-    private void addChildComponents() {        
-        
+    private void addChildComponents() {
+
         setLayout(new GridBagLayout());
 
         GridBagConstraints c = new GridBagConstraints();
@@ -52,7 +49,7 @@ public class WebCrawler extends JFrame {
         c.fill = GridBagConstraints.BOTH;
 
         c.gridy = 0;
-        add(new JLabel("URL: "), c);       
+        add(new JLabel("URL: "), c);
 
         c.weightx = 1;
         add(urlTextField, c);
@@ -61,34 +58,34 @@ public class WebCrawler extends JFrame {
         add(runButton, c);
 
         c.gridy = 1;
-        c.weightx = 0;      
+        c.weightx = 0;
         add(new JLabel("Title: "), c);
 
         c.weightx = 1;
-        add(titleLabel, c);        
+        add(titleLabel, c);
 
         c.weighty = 1;
         c.gridx = 0;
         c.gridy = 2;
         c.gridwidth = 3;
-        c.insets = new Insets(10,10,10,10);  
+        c.insets = new Insets(10,10,10,10);
         add(textAreaScrollPane, c);
 
     }
 
     void setText(String text) {
+        String title = "";
         try {
-            Pattern p = Pattern.compile("(?<=<title>).*?(?=<\\/title>)");
+            Pattern p = Pattern.compile("(?<=<title>).*?(?=</title>)");
             Matcher m = p.matcher(text);
-            m.find();
-            this.title = m.group();            
+            if (m.find()) {
+                title = m.group();
+            }
         } catch (Exception e) {
-            this.title = "";
             e.printStackTrace();
         }
-        this.text = text;
-        titleLabel.setText(this.title);     
-        textArea.setText(this.text);
+        titleLabel.setText(title);
+        textArea.setText(text);
     }
 
     public WebCrawler() {
@@ -115,11 +112,9 @@ public class WebCrawler extends JFrame {
 
         runButton = new JButton("Get Text!");
         runButton.setName("RunButton");
-        runButton.addActionListener(e -> {
-            setText(getTextFromURL(urlTextField.getText()));
-        });
+        runButton.addActionListener(e -> setText(getTextFromURL(urlTextField.getText())));
 
-        titleLabel = new JLabel("asdsadsada");
+        titleLabel = new JLabel();
         titleLabel.setName("TitleLabel");
 
         addChildComponents();
