@@ -38,7 +38,7 @@ public class WebCrawler extends JFrame {
         return results;
     }
 
-    private URL resolve(URL base, String relUrl) {        
+    private URL relURLToAbsURL(URL base, String relUrl) {        
         try {      
             if (relUrl.startsWith("?"))
                 relUrl = base.getPath() + relUrl;
@@ -51,29 +51,33 @@ public class WebCrawler extends JFrame {
         }
     }
 
-    private List<String[]> formatListOfHrefs(List<String> input) {
-        return input.stream()
-            .map(href -> resolve(url, href))
-            .filter(Objects::nonNull)
-            .distinct()
-            .filter(url -> {
-                try {
-                    String contentType = url.openConnection().getContentType();
-                    if (contentType == null){
-                        return false;
-                    }
-                    return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
-                } catch (Exception e) {
-                    System.err.println(url.toString());
-                    e.printStackTrace();
-                    return false;
-                }
-            })
-            .map(url -> new String[] { url.toString(), getTitleFromHTML(getTextFromURL(url)) })
-            .collect(Collectors.toList());
+    private boolean isUrlHTML(URL url) {
+        try {
+            String contentType = url.openConnection().getContentType();
+            if (contentType == null){
+                return false;
+            }
+            return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
+        } catch (Exception e) {
+            System.err.println(url.toString());
+            e.printStackTrace();
+            return false;
+        }
     }
 
-    
+    private String[] urlToTableRow(URL url) {
+        return new String[] { url.toString(), getTitleFromHTML(getTextFromURL(url)) };
+    }
+
+    private List<String[]> formatListOfHrefs(List<String> input) {
+        return input.stream()
+            .map(href -> relURLToAbsURL(url, href))
+            .filter(Objects::nonNull)
+            .distinct()
+            .filter(this::isUrlHTML)
+            .map(this::urlToTableRow)
+            .collect(Collectors.toList());
+    }
 
     private String getTextFromURL(URL url) {
         String siteText = "";
