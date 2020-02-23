@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.net.MalformedURLException;
 
 public class WebCrawler extends JFrame {
 
@@ -39,43 +38,39 @@ public class WebCrawler extends JFrame {
         return results;
     }
 
-    private String resolve(URL base, String relUrl) throws MalformedURLException {
-        if (relUrl.startsWith("?"))
-            relUrl = base.getPath() + relUrl;
-        if (relUrl.indexOf('.') == 0 && base.getFile().indexOf('/') != 0) {
-            base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
+    private URL resolve(URL base, String relUrl) {        
+        try {      
+            if (relUrl.startsWith("?"))
+                relUrl = base.getPath() + relUrl;
+            if (relUrl.indexOf('.') == 0 && base.getFile().indexOf('/') != 0) {
+                base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
+            }      
+            return new URL(base, relUrl);            
+        } catch (Exception e) {
+            return null;
         }
-        return new URL(base, relUrl).toString();
     }
 
     private List<String[]> formatListOfHrefs(List<String> input) {
-        List<String[]> result = new ArrayList<>();
-        List<String> formatted = input.stream()
-        .map(href -> {
-            try {
-                return resolve(url, href);                
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        })
-        .filter(Objects::nonNull).distinct().filter(href -> {
-            try {
-                URL u = new URL(href);
-                return List.of(u.openConnection().getContentType().replace("\\s", "").split(";")).contains("text/html");
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-        }).collect(Collectors.toList());
-        for (String i : formatted) {
-            try {
-                result.add(new String[] { i, getTitleFromHTML(getTextFromURL(new URL(i))) });
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return result;
+        return input.stream()
+            .map(href -> resolve(url, href))
+            .filter(Objects::nonNull)
+            .distinct()
+            .filter(href -> {
+                try {
+                    String contentType = href.openConnection().getContentType();
+                    if (contentType == null){
+                        return false;
+                    }
+                    return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
+                } catch (Exception e) {
+                    System.err.println(href.toString());
+                    e.printStackTrace();
+                    return false;
+                }
+            })
+            .map(i -> new String[] { i.toString(), getTitleFromHTML(getTextFromURL(i)) })
+            .collect(Collectors.toList());
     }
 
     
@@ -96,7 +91,7 @@ public class WebCrawler extends JFrame {
             reader.close();
             siteText = stringBuilder.toString();
         } catch (Exception e) {
-            System.err.println(url.getPath() + "\n" + e.getMessage());
+            System.err.printf("No content: %s\n", url.toString());
         }
         return siteText;
     }
