@@ -23,7 +23,8 @@ public class WebCrawler extends JFrame {
         final String siteText;
         try {
             final InputStream inputStream = new URL(input).openStream();
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            final BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final StringBuilder stringBuilder = new StringBuilder();
 
             String nextLine;
@@ -45,7 +46,7 @@ public class WebCrawler extends JFrame {
         setLayout(new GridBagLayout());
 
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10,10,0,10);
+        c.insets = new Insets(10, 10, 0, 10);
         c.fill = GridBagConstraints.BOTH;
 
         c.gridy = 0;
@@ -64,11 +65,10 @@ public class WebCrawler extends JFrame {
         c.weightx = 1;
         add(titleLabel, c);
 
-        c.weighty = 1;
-        c.gridx = 0;
         c.gridy = 2;
+        c.weighty = 1;
         c.gridwidth = 3;
-        c.insets = new Insets(10,10,10,10);
+        c.insets = new Insets(10, 10, 10, 10);
         add(textAreaScrollPane, c);
 
     }
@@ -97,11 +97,11 @@ public class WebCrawler extends JFrame {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(720, 480);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null);        
+        setTitle("Web Crawler");
 
         textArea = new JTextArea();
         textArea.setName("HtmlTextArea");
-        textArea.setText("HTML code?");
         textArea.setEnabled(false);
         textArea.setLineWrap(true);
 
@@ -112,14 +112,14 @@ public class WebCrawler extends JFrame {
 
         runButton = new JButton("Get Text!");
         runButton.setName("RunButton");
-        runButton.addActionListener(e -> setText(getTextFromURL(urlTextField.getText())));
+        runButton.addActionListener(e ->
+            setText(getTextFromURL(urlTextField.getText()))
+        );
 
         titleLabel = new JLabel();
         titleLabel.setName("TitleLabel");
 
         addChildComponents();
-
-        setTitle("Window");
 
         setVisible(true);
     }
