@@ -56,20 +56,20 @@ public class WebCrawler extends JFrame {
             .map(href -> resolve(url, href))
             .filter(Objects::nonNull)
             .distinct()
-            .filter(href -> {
+            .filter(url -> {
                 try {
-                    String contentType = href.openConnection().getContentType();
+                    String contentType = url.openConnection().getContentType();
                     if (contentType == null){
                         return false;
                     }
                     return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
                 } catch (Exception e) {
-                    System.err.println(href.toString());
+                    System.err.println(url.toString());
                     e.printStackTrace();
                     return false;
                 }
             })
-            .map(i -> new String[] { i.toString(), getTitleFromHTML(getTextFromURL(i)) })
+            .map(url -> new String[] { url.toString(), getTitleFromHTML(getTextFromURL(url)) })
             .collect(Collectors.toList());
     }
 
