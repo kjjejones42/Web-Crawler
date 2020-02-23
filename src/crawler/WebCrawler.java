@@ -5,12 +5,22 @@ import java.awt.*;
 import java.net.URL;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.*;
 
 public class WebCrawler extends JFrame {
 
     static final long serialVersionUID = 1;
 
     private final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    private final JTextArea textArea;
+    private final JScrollPane textAreaScrollPane;
+    private final JTextField urlTextField;
+    private final JButton runButton;
+    private final JLabel titleLabel;
+    
+    private String text;
+    private String title;
 
     private String getTextFromURL(String input) {
         final String siteText;
@@ -33,6 +43,54 @@ public class WebCrawler extends JFrame {
         return siteText;
     }
 
+    private void addChildComponents() {        
+        
+        setLayout(new GridBagLayout());
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(10,10,0,10);
+        c.fill = GridBagConstraints.BOTH;
+
+        c.gridy = 0;
+        add(new JLabel("URL: "), c);       
+
+        c.weightx = 1;
+        add(urlTextField, c);
+
+        c.weightx = 0;
+        add(runButton, c);
+
+        c.gridy = 1;
+        c.weightx = 0;      
+        add(new JLabel("Title: "), c);
+
+        c.weightx = 1;
+        add(titleLabel, c);        
+
+        c.weighty = 1;
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 3;
+        c.insets = new Insets(10,10,10,10);  
+        add(textAreaScrollPane, c);
+
+    }
+
+    void setText(String text) {
+        try {
+            Pattern p = Pattern.compile("(?<=<title>).*?(?=<\\/title>)");
+            Matcher m = p.matcher(text);
+            m.find();
+            this.title = m.group();            
+        } catch (Exception e) {
+            this.title = "";
+            e.printStackTrace();
+        }
+        this.text = text;
+        titleLabel.setText(this.title);     
+        textArea.setText(this.text);
+    }
+
     public WebCrawler() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -44,40 +102,27 @@ public class WebCrawler extends JFrame {
         setSize(720, 480);
         setLocationRelativeTo(null);
 
-        setLayout(new GridBagLayout());
-
-
-        JTextArea textArea = new JTextArea();
+        textArea = new JTextArea();
         textArea.setName("HtmlTextArea");
         textArea.setText("HTML code?");
         textArea.setEnabled(false);
+        textArea.setLineWrap(true);
 
-        JScrollPane textAreaScrollPane = new JScrollPane(textArea);
+        textAreaScrollPane = new JScrollPane(textArea);
 
-        JTextField urlTextField = new JTextField();
+        urlTextField = new JTextField();
         urlTextField.setName("UrlTextField");
 
-        JButton runButton = new JButton("Get Text!");
+        runButton = new JButton("Get Text!");
         runButton.setName("RunButton");
-        runButton.addActionListener(e -> textArea.setText(getTextFromURL(urlTextField.getText())));
+        runButton.addActionListener(e -> {
+            setText(getTextFromURL(urlTextField.getText()));
+        });
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10,10,0,10);
-        c.fill = GridBagConstraints.BOTH;
-        c.weightx = 1;
-        c.gridy = 0;
+        titleLabel = new JLabel("asdsadsada");
+        titleLabel.setName("TitleLabel");
 
-        add(urlTextField, c);
-
-        c.weightx = 0;
-        add(runButton, c);
-
-        c.gridy = 1;
-        c.weightx = 1;
-        c.weighty = 1;
-        c.gridwidth = 2;
-        c.insets = new Insets(10,10,10,10);
-        add(textAreaScrollPane, c);
+        addChildComponents();
 
         setTitle("Window");
 
