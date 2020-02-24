@@ -27,7 +27,7 @@ For the testing reasons, you need to set the name of each component using the me
 
 On this stage, please provide the following components:
 
-|                 |                    |
+| Class           | Name               |
 | --------------- | ------------------ |
 | `JTextField`    | UrlTextField       |
 | `JToggleButton` | RunButton          |
