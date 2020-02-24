@@ -1,167 +1,125 @@
 package crawler;
 
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-import java.util.stream.Collectors;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.net.*;
+import javax.swing.*;
+import java.awt.Insets;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import javax.swing.table.TableModel;
 
-import javax.swing.table.*;
-
-public class WebCrawler {
-
-    private final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    private final WebCrawlerGUI gui;
-
-    private URL url;
-
-    private List<String> getAllHrefs(String input) {
-        List<String> results = new ArrayList<>();
-        results.add(url.toString());
-        Matcher m = Pattern.compile("(?<=href=['\"]?)[^\\s'\">]+").matcher(input);
-        while (m.find()) {
-            results.add(m.group());
-        }
-        return results;
-    }
-
-    private URL relURLToAbsURL(URL base, String relUrl) {        
-        try {      
-            if (relUrl.startsWith("?"))
-                relUrl = base.getPath() + relUrl;
-            if (relUrl.indexOf('.') == 0 && base.getFile().indexOf('/') != 0) {
-                base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
-            }      
-            return new URL(base, relUrl);            
-        } catch (MalformedURLException e) {
-            return null;
-        }
-    }
-
-    private boolean isUrlHTML(URL url) {
-        try {
-            String contentType = getURLConnection(url).getContentType();
-            if (contentType == null){
-                return false;
-            }
-            return contentType.contains("text/html");
-        } catch (IOException e) {
-            System.err.println(url.toString());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private String[] urlToTableRow(URL url) {
-        String title;
-        try {
-            title = getTitleFromHTML(getTextFromURL(url));         
-        } catch (RuntimeException e) {
-            title = e.getMessage();
-        }
-        return new String[] { url.toString(), title };
-    }
-
-    private List<String[]> formatListOfHrefs(List<String> input) {
-        return input.parallelStream()
-            .map(href -> relURLToAbsURL(url, href))
-            .filter(Objects::nonNull)
-            .distinct()
-            .filter(this::isUrlHTML)
-            .map(this::urlToTableRow)
-            .collect(Collectors.toList());
-    }
-
-    private DefaultTableModel HTMLToTable(String html) {        
-        String[] columnNames = { "URL", "Title" };
-        Object[] resultRows = formatListOfHrefs(getAllHrefs(html)).toArray();
-        String[][] data = new String[resultRows.length][];
-        for (int i = 0; i < resultRows.length; i++) {
-            data[i] = (String[]) resultRows[i];
-        }
-        return new DefaultTableModel(data, columnNames);
-    }
-
-    private URLConnection getURLConnection(URL url) throws IOException {
-        URLConnection con = url.openConnection();
-        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
-        return con;         
-    }
-
-    private String getTextFromURL(URL url) {
-        try {
-            final InputStream inputStream = getURLConnection(url).getInputStream();
-            final BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-            final StringBuilder stringBuilder = new StringBuilder();
-
-            String nextLine;
-            while ((nextLine = reader.readLine()) != null) {
-                stringBuilder.append(nextLine);
-                stringBuilder.append(LINE_SEPARATOR);
-            }
-            reader.close();
-            return stringBuilder.toString();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not load page.");
-        }
-    }
-
-    private String getTitleFromHTML(String text) {
-        String title = "";
-        try {
-            Matcher m = Pattern.compile("(?<=<title>).*?(?=</title>)").matcher(text);
-            if (m.find()) {
-                title = m.group();
-            }
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-        }
-        return title;
-    }
+class WebCrawler extends JFrame {
     
-    void processUrlFromUser(String text) {
-        if (text == null || text.isEmpty()){
-            return;
-        }
-        try {            
-            url = new URL(text);            
-            String html = getTextFromURL(url);
-            gui.setTableModel(HTMLToTable(html));   
-            gui.setTitleLabel(getTitleFromHTML(html));
-        } catch (MalformedURLException e) {            
-            gui.setTitleLabel("Invalid URL: " + e.getMessage());        
-        } catch (RuntimeException e) {
-            gui.setTitleLabel(e.getMessage());
-        }
+    static final long serialVersionUID = 1;
+
+    private final WebCrawlerLogic webCrawler;
+
+    private final JScrollPane tableScrollPane;
+    private final JTextField urlTextField;
+    private final JButton runButton;
+    private final JLabel titleLabel;
+    private final JTable titlesTable;
+    private final JTextField exportUrlTextField;
+    private final JButton exportButton;
+    
+    private void addChildComponents() {
+
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.setLayout(new GridBagLayout());
+
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(5, 5, 5, 5);
+        c.fill = GridBagConstraints.BOTH;
+
+        c.gridy = 0;
+        panel.add(new JLabel("URL: "), c);
+
+        c.weightx = 1;
+        panel.add(urlTextField, c);
+
+        c.weightx = 0;
+        panel.add(runButton, c);
+
+        c.gridy = 1;
+        c.weightx = 0;
+        panel.add(new JLabel("Title: "), c);
+
+        c.weightx = 1;
+        panel.add(titleLabel, c);
+
+        c.gridy = 2;
+        c.weighty = 1;
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        panel.add(tableScrollPane, c);
+
+        c.gridy = 3;
+        c.weighty = 0;
+        c.weightx = 0;
+        c.gridwidth = 1;
+        panel.add(new JLabel("Export"), c);
+        
+        c.weightx = 1;
+        panel.add(exportUrlTextField, c);
+
+        c.weightx = 0;
+        panel.add(exportButton, c);
+
+        add(panel);
     }
 
-    void saveToFile(TableModel data, String fileName) {
-        if (data == null || fileName == null || fileName.isEmpty()){
-            return;
-        }
-        try {            
-            BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
-            for (int row = 0; row < data.getRowCount(); row++) {
-                for (int col = 0; col < data.getColumnCount(); col++) {
-                    String line = (String) data.getValueAt(row, col);
-                    bw.write(line + System.lineSeparator());
-                }
-            }
-            bw.close();
-        } catch (IOException e) {
+    private void setChildComponentNames() {
+        titlesTable.setName("TitlesTable");
+        urlTextField.setName("UrlTextField");
+        runButton.setName("RunButton");
+        titleLabel.setName("TitleLabel");
+        exportUrlTextField.setName("ExportUrlTextField");
+        exportButton.setName("ExportButton");
+    }
+
+    private void setChildComponentProperties() {
+        titlesTable.setEnabled(false);
+        runButton.addActionListener(e -> webCrawler.processUrlFromUser(urlTextField.getText()));
+        exportButton.addActionListener(e -> webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText()));
+
+    }
+
+    void setTitleLabel(String title) {        
+        titleLabel.setText(title);
+    }
+
+    void setTableModel(TableModel dataModel) {
+        titlesTable.setModel(dataModel);
+    }
+
+    WebCrawler() {        
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
             e.printStackTrace();
         }
+
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(720, 480);
+        setLocationRelativeTo(null);
+        setTitle("Web Crawler");
+
+        this.webCrawler = new WebCrawlerLogic(this);
+        this.titlesTable = new JTable();
+        this.tableScrollPane = new JScrollPane(titlesTable);
+        this.urlTextField = new JTextField();
+        this.runButton = new JButton("Get Text!");
+        this.titleLabel = new JLabel();
+        this.exportUrlTextField = new JTextField();
+        this.exportButton = new JButton("Save");
+        
+        setChildComponentNames();
+        setChildComponentProperties();
+        addChildComponents();
+        
+        setVisible(true);
     }
 
-    public WebCrawler() {
-        this.gui = new WebCrawlerGUI(this);
-    }
-
-    public static void main(final String[] args) {
+    public static void main(String[] args) {
         new WebCrawler();
     }
+
 }
