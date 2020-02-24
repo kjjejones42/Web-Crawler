@@ -110,8 +110,7 @@ public class WebCrawler {
     private String getTitleFromHTML(String text) {
         String title = "";
         try {
-            Pattern p = Pattern.compile("(?<=<title>).*?(?=</title>)");
-            Matcher m = p.matcher(text);
+            Matcher m = Pattern.compile("(?<=<title>).*?(?=</title>)").matcher(text);
             if (m.find()) {
                 title = m.group();
             }
