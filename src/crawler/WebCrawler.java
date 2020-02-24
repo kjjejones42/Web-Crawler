@@ -134,6 +134,9 @@ public class WebCrawler {
     }
 
     void saveToFile(TableModel data, String fileName) {
+        if (data == null || fileName == null || fileName.isEmpty()){
+            return;
+        }
         try {            
             BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
             for (int row = 0; row < data.getRowCount(); row++) {
