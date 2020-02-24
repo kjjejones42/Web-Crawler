@@ -4,10 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
-import java.net.URL;
-import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.net.*;
 
 import javax.swing.table.*;
 
@@ -44,7 +43,7 @@ public class WebCrawler {
 
     private boolean isUrlHTML(URL url) {
         try {
-            String contentType = url.openConnection().getContentType();
+            String contentType = getURLConnection(url).getContentType();
             if (contentType == null){
                 return false;
             }
@@ -86,10 +85,15 @@ public class WebCrawler {
         return new DefaultTableModel(data, columnNames);
     }
 
+    private URLConnection getURLConnection(URL url) throws IOException {
+        URLConnection con = url.openConnection();
+        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
+        return con;         
+    }
+
     private String getTextFromURL(URL url) {
-        String siteText = "";
         try {
-            final InputStream inputStream = url.openStream();
+            final InputStream inputStream = getURLConnection(url).getInputStream();
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final StringBuilder stringBuilder = new StringBuilder();
@@ -100,11 +104,10 @@ public class WebCrawler {
                 stringBuilder.append(LINE_SEPARATOR);
             }
             reader.close();
-            siteText = stringBuilder.toString();
+            return stringBuilder.toString();
         } catch (IOException e) {
             throw new RuntimeException("Could not load page.");
         }
-        return siteText;
     }
 
     private String getTitleFromHTML(String text) {
