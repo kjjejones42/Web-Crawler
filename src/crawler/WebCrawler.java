@@ -137,10 +137,10 @@ public class WebCrawler {
         try {            
             BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
             for (int row = 0; row < data.getRowCount(); row++) {
-                String a = (String) data.getValueAt(row, 0);
-                bw.write(a + System.lineSeparator());
-                String b = (String) data.getValueAt(row, 1);
-                bw.write(b + System.lineSeparator());
+                for (int col = 0; col < data.getColumnCount(); col++) {
+                    String line = (String) data.getValueAt(row, col);
+                    bw.write(line + System.lineSeparator());
+                }
             }
             bw.close();
         } catch (IOException e) {
