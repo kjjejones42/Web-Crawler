@@ -1,15 +1,13 @@
 package crawler;
 
-import javax.swing.table.DefaultTableModel;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.*;
 import java.util.*;
+import java.util.regex.*;
 import java.util.stream.Collectors;
-import javax.swing.table.TableModel;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
+import javax.swing.table.DefaultTableModel;
 
 public class WebCrawler {
 
@@ -76,7 +74,7 @@ public class WebCrawler {
             .collect(Collectors.toList());
     }
 
-    private TableModel HTMLToTable(String html) {        
+    private DefaultTableModel HTMLToTable(String html) {        
         String[] columnNames = { "URL", "Title" };
         Object[] resultRows = formatListOfHrefs(getAllHrefs(html)).toArray();
         String[][] data = new String[resultRows.length][];

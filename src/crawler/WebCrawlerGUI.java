@@ -1,9 +1,9 @@
 package crawler;
 
 import javax.swing.*;
+import java.awt.Insets;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import javax.swing.table.TableModel;
 
 class WebCrawlerGUI extends JFrame {
