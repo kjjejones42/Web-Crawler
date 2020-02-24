@@ -78,8 +78,7 @@ class WebCrawlerGUI extends JFrame {
     private void setChildComponentProperties() {
         titlesTable.setEnabled(false);
         runButton.addActionListener(e -> {
-            webCrawler.setUrl(urlTextField.getText());
-            webCrawler.processUrlFromUser();
+            webCrawler.processUrlFromUser(urlTextField.getText());
         });
 
     }

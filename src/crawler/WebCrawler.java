@@ -2,19 +2,20 @@ package crawler;
 
 import javax.swing.table.DefaultTableModel;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import javax.swing.table.TableModel;
 
 public class WebCrawler {
 
     private final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private final WebCrawlerGUI gui;
-    private final String[] columnNames = { "URL", "Title" };
 
     private URL url;
 
@@ -36,7 +37,7 @@ public class WebCrawler {
                 base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
             }      
             return new URL(base, relUrl);            
-        } catch (Exception e) {
+        } catch (MalformedURLException e) {
             return null;
         }
     }
@@ -48,7 +49,7 @@ public class WebCrawler {
                 return false;
             }
             return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.err.println(url.toString());
             e.printStackTrace();
             return false;
@@ -56,7 +57,13 @@ public class WebCrawler {
     }
 
     private String[] urlToTableRow(URL url) {
-        return new String[] { url.toString(), getTitleFromHTML(getTextFromURL(url)) };
+        String title;
+        try {
+            title = getTitleFromHTML(getTextFromURL(url));         
+        } catch (RuntimeException e) {
+            title = e.getMessage();
+        }
+        return new String[] { url.toString(), title };
     }
 
     private List<String[]> formatListOfHrefs(List<String> input) {
@@ -69,15 +76,14 @@ public class WebCrawler {
             .collect(Collectors.toList());
     }
 
-    private void HTMLToTable(String html) {
-        String title = getTitleFromHTML(html);
-        gui.setTitleLabel(title);
-        Object[] a = formatListOfHrefs(getAllHrefs(html)).toArray();
-        String[][] data = new String[a.length][];
-        for (int i = 0; i < a.length; i++) {
-            data[i] = (String[]) a[i];
+    private TableModel HTMLToTable(String html) {        
+        String[] columnNames = { "URL", "Title" };
+        Object[] resultRows = formatListOfHrefs(getAllHrefs(html)).toArray();
+        String[][] data = new String[resultRows.length][];
+        for (int i = 0; i < resultRows.length; i++) {
+            data[i] = (String[]) resultRows[i];
         }
-        gui.setTableModel(new DefaultTableModel(data, columnNames));
+        return new DefaultTableModel(data, columnNames);
     }
 
     private String getTextFromURL(URL url) {
@@ -95,8 +101,8 @@ public class WebCrawler {
             }
             reader.close();
             siteText = stringBuilder.toString();
-        } catch (Exception e) {
-            System.err.printf("No content: %s\n", url.toString());
+        } catch (IOException e) {
+            throw new RuntimeException("No content: " + url.toString());
         }
         return siteText;
     }
@@ -109,24 +115,25 @@ public class WebCrawler {
             if (m.find()) {
                 title = m.group();
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
         }
         return title;
     }
     
-    void processUrlFromUser() {
-        HTMLToTable(getTextFromURL(this.url));
-    }
-
-    void setUrl(String text) {
-        try {
-            url = new URL(text);
-        } catch (Exception e) {
-            e.printStackTrace();
-            url = null;
+    void processUrlFromUser(String text) {
+        try {            
+            url = new URL(text);            
+            String html = getTextFromURL(url);
+            gui.setTableModel(HTMLToTable(html));   
+            gui.setTitleLabel(getTitleFromHTML(html));
+        } catch (MalformedURLException e) {            
+            gui.setTitleLabel("Invalid URL: " + e.getMessage());        
+        } catch (RuntimeException e) {
+            gui.setTitleLabel(e.getMessage());
         }
     }
+
 
     public WebCrawler() {
         this.gui = new WebCrawlerGUI(this);
