@@ -46,7 +46,7 @@ public class WebCrawler {
             if (contentType == null){
                 return false;
             }
-            return List.of(contentType.replaceAll("\\s", "").split(";")).contains("text/html");
+            return contentType.contains("text/html");
         } catch (IOException e) {
             System.err.println(url.toString());
             e.printStackTrace();
@@ -100,7 +100,7 @@ public class WebCrawler {
             reader.close();
             siteText = stringBuilder.toString();
         } catch (IOException e) {
-            throw new RuntimeException("No content: " + url.toString());
+            throw new RuntimeException(e.getMessage() + ": " + url.toString());
         }
         return siteText;
     }
