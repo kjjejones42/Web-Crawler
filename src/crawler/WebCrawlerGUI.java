@@ -10,11 +10,15 @@ class WebCrawlerGUI extends JFrame {
     
     static final long serialVersionUID = 1;
 
+    private final WebCrawler webCrawler;
+
     private final JScrollPane tableScrollPane;
     private final JTextField urlTextField;
     private final JButton runButton;
     private final JLabel titleLabel;
     private final JTable titlesTable;
+    private final JTextField exportUrlTextField;
+    private final JButton exportButton;
     
     private void addChildComponents() {
 
@@ -44,10 +48,39 @@ class WebCrawlerGUI extends JFrame {
 
         c.gridy = 2;
         c.weighty = 1;
-        c.gridwidth = 3;
+        c.gridwidth = GridBagConstraints.REMAINDER;
         panel.add(tableScrollPane, c);
 
+        c.gridy = 3;
+        c.weighty = 0;
+        c.weightx = 0;
+        c.gridwidth = 1;
+        panel.add(new JLabel("Export"), c);
+        
+        c.weightx = 1;
+        panel.add(exportUrlTextField, c);
+
+        c.weightx = 0;
+        panel.add(exportButton, c);
+
         add(panel);
+    }
+
+    private void setChildComponentNames() {
+        titlesTable.setName("TitlesTable");
+        urlTextField.setName("UrlTextField");
+        runButton.setName("RunButton");
+        titleLabel.setName("TitleLabel");
+        exportUrlTextField.setName("ExportUrlTextField");
+        exportButton.setName("ExportButton");
+    }
+
+    private void setChildComponentProperties() {
+        titlesTable.setEnabled(false);
+        runButton.addActionListener(e -> {
+            webCrawler.setUrl(urlTextField.getText());
+            webCrawler.processUrlFromUser();
+        });
 
     }
 
@@ -71,24 +104,17 @@ class WebCrawlerGUI extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Web Crawler");
 
-        titlesTable = new JTable();
-        titlesTable.setName("TitlesTable");
-        titlesTable.setEnabled(false);
-        tableScrollPane = new JScrollPane(titlesTable);
-
-        urlTextField = new JTextField();
-        urlTextField.setName("UrlTextField");
-
-        runButton = new JButton("Get Text!");
-        runButton.setName("RunButton");
-        runButton.addActionListener(e -> {
-            webCrawler.setUrl(urlTextField.getText());
-            webCrawler.processUrlFromUser();
-        });
-
-        titleLabel = new JLabel();
-        titleLabel.setName("TitleLabel");
-
+        this.webCrawler = webCrawler;
+        this.titlesTable = new JTable();
+        this.tableScrollPane = new JScrollPane(titlesTable);
+        this.urlTextField = new JTextField();
+        this.runButton = new JButton("Get Text!");
+        this.titleLabel = new JLabel();
+        this.exportUrlTextField = new JTextField();
+        this.exportButton = new JButton("Save");
+        
+        setChildComponentNames();
+        setChildComponentProperties();
         addChildComponents();
         
         setVisible(true);
