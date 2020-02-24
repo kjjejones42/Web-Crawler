@@ -6,10 +6,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Debug (Launch)-WebCrawler<crawler>",
+            "name": "Debug (Launch)-WebCrawler<Web-Crawler>",
             "request": "launch",
             "mainClass": "crawler.WebCrawler",
-            "projectName": "crawler"
+            "projectName": "Web-Crawler"
         }
     ]
 }

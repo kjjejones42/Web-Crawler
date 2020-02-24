@@ -18,33 +18,36 @@ class WebCrawlerGUI extends JFrame {
     
     private void addChildComponents() {
 
-        setLayout(new GridBagLayout());
+        JPanel panel = new JPanel();
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.setLayout(new GridBagLayout());
 
         GridBagConstraints c = new GridBagConstraints();
-        c.insets = new Insets(10, 10, 0, 10);
+        c.insets = new Insets(5, 5, 5, 5);
         c.fill = GridBagConstraints.BOTH;
 
         c.gridy = 0;
-        add(new JLabel("URL: "), c);
+        panel.add(new JLabel("URL: "), c);
 
         c.weightx = 1;
-        add(urlTextField, c);
+        panel.add(urlTextField, c);
 
         c.weightx = 0;
-        add(runButton, c);
+        panel.add(runButton, c);
 
         c.gridy = 1;
         c.weightx = 0;
-        add(new JLabel("Title: "), c);
+        panel.add(new JLabel("Title: "), c);
 
         c.weightx = 1;
-        add(titleLabel, c);
+        panel.add(titleLabel, c);
 
         c.gridy = 2;
         c.weighty = 1;
         c.gridwidth = 3;
-        c.insets = new Insets(10, 10, 10, 10);
-        add(tableScrollPane, c);
+        panel.add(tableScrollPane, c);
+
+        add(panel);
 
     }
 
