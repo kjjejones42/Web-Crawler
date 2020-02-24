@@ -28,14 +28,14 @@ class WebCrawlerLogic {
         return results;
     }
 
-    private URL relURLToAbsURL(URL base, String relUrl) {        
-        try {      
+    private URL relURLToAbsURL(URL base, String relUrl) {
+        try {
             if (relUrl.startsWith("?"))
                 relUrl = base.getPath() + relUrl;
             if (relUrl.indexOf('.') == 0 && base.getFile().indexOf('/') != 0) {
                 base = new URL(base.getProtocol(), base.getHost(), base.getPort(), "/" + base.getFile());
-            }      
-            return new URL(base, relUrl);            
+            }
+            return new URL(base, relUrl);
         } catch (MalformedURLException e) {
             return null;
         }
@@ -44,7 +44,7 @@ class WebCrawlerLogic {
     private boolean isUrlHTML(URL url) {
         try {
             String contentType = getURLConnection(url).getContentType();
-            if (contentType == null){
+            if (contentType == null) {
                 return false;
             }
             return contentType.contains("text/html");
@@ -58,7 +58,7 @@ class WebCrawlerLogic {
     private String[] urlToTableRow(URL url) {
         String title;
         try {
-            title = getTitleFromHTML(getTextFromURL(url));         
+            title = getTitleFromHTML(getTextFromURL(url));
         } catch (RuntimeException e) {
             title = e.getMessage();
         }
@@ -75,7 +75,7 @@ class WebCrawlerLogic {
             .collect(Collectors.toList());
     }
 
-    private DefaultTableModel HTMLToTable(String html) {        
+    private DefaultTableModel HTMLToTable(String html) {
         String[] columnNames = { "URL", "Title" };
         Object[] resultRows = formatListOfHrefs(getAllHrefs(html)).toArray();
         String[][] data = new String[resultRows.length][];
@@ -87,8 +87,9 @@ class WebCrawlerLogic {
 
     private URLConnection getURLConnection(URL url) throws IOException {
         URLConnection con = url.openConnection();
-        con.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
-        return con;         
+        con.setRequestProperty("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
+        return con;
     }
 
     private String getTextFromURL(URL url) {
@@ -122,28 +123,28 @@ class WebCrawlerLogic {
         }
         return title;
     }
-    
+
     void processUrlFromUser(String text) {
-        if (text == null || text.isEmpty()){
+        if (text == null || text.isEmpty()) {
             return;
         }
-        try {            
-            url = new URL(text);            
+        try {
+            url = new URL(text);
             String html = getTextFromURL(url);
-            gui.setTableModel(HTMLToTable(html));   
+            gui.setTableModel(HTMLToTable(html));
             gui.setTitleLabel(getTitleFromHTML(html));
-        } catch (MalformedURLException e) {            
-            gui.setTitleLabel("Invalid URL: " + e.getMessage());        
+        } catch (MalformedURLException e) {
+            gui.setTitleLabel("Invalid URL: " + e.getMessage());
         } catch (RuntimeException e) {
             gui.setTitleLabel(e.getMessage());
         }
     }
 
     void saveToFile(TableModel data, String fileName) {
-        if (data == null || fileName == null || fileName.isEmpty()){
+        if (data == null || fileName == null || fileName.isEmpty()) {
             return;
         }
-        try {            
+        try {
             BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
             for (int row = 0; row < data.getRowCount(); row++) {
                 for (int col = 0; col < data.getColumnCount(); col++) {
@@ -157,7 +158,7 @@ class WebCrawlerLogic {
         }
     }
 
-    WebCrawlerLogic(WebCrawler gui){
+    WebCrawlerLogic(WebCrawler gui) {
         this.gui = gui;
     }
 }

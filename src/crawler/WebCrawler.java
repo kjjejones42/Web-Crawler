@@ -7,7 +7,7 @@ import java.awt.GridBagConstraints;
 import javax.swing.table.TableModel;
 
 public class WebCrawler extends JFrame {
-    
+
     static final long serialVersionUID = 1;
 
     private final WebCrawlerLogic webCrawler;
@@ -19,7 +19,7 @@ public class WebCrawler extends JFrame {
     private final JTable titlesTable;
     private final JTextField exportUrlTextField;
     private final JButton exportButton;
-    
+
     private void addChildComponents() {
 
         JPanel panel = new JPanel();
@@ -56,7 +56,7 @@ public class WebCrawler extends JFrame {
         c.weightx = 0;
         c.gridwidth = 1;
         panel.add(new JLabel("Export"), c);
-        
+
         c.weightx = 1;
         panel.add(exportUrlTextField, c);
 
@@ -78,11 +78,12 @@ public class WebCrawler extends JFrame {
     private void setChildComponentProperties() {
         titlesTable.setEnabled(false);
         runButton.addActionListener(e -> webCrawler.processUrlFromUser(urlTextField.getText()));
-        exportButton.addActionListener(e -> webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText()));
+        exportButton
+                .addActionListener(e -> webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText()));
 
     }
 
-    void setTitleLabel(String title) {        
+    void setTitleLabel(String title) {
         titleLabel.setText(title);
     }
 
@@ -110,11 +111,11 @@ public class WebCrawler extends JFrame {
         this.titleLabel = new JLabel();
         this.exportUrlTextField = new JTextField();
         this.exportButton = new JButton("Save");
-        
+
         setChildComponentNames();
         setChildComponentProperties();
         addChildComponents();
-        
+
         setVisible(true);
     }
 
