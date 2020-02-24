@@ -121,6 +121,9 @@ public class WebCrawler {
     }
     
     void processUrlFromUser(String text) {
+        if (text == null || text.isEmpty()){
+            return;
+        }
         try {            
             url = new URL(text);            
             String html = getTextFromURL(url);
