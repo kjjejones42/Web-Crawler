@@ -80,6 +80,9 @@ class WebCrawlerGUI extends JFrame {
         runButton.addActionListener(e -> {
             webCrawler.processUrlFromUser(urlTextField.getText());
         });
+        exportButton.addActionListener(e -> {
+            webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText());
+        });
 
     }
 

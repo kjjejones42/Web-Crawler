@@ -7,7 +7,9 @@ import java.util.stream.Collectors;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
-import javax.swing.table.DefaultTableModel;
+import java.nio.file.*;
+
+import javax.swing.table.*;
 
 public class WebCrawler {
 
@@ -100,7 +102,7 @@ public class WebCrawler {
             reader.close();
             siteText = stringBuilder.toString();
         } catch (IOException e) {
-            throw new RuntimeException(e.getMessage() + ": " + url.toString());
+            throw new RuntimeException("Could not load page.");
         }
         return siteText;
     }
@@ -131,6 +133,21 @@ public class WebCrawler {
         }
     }
 
+    void saveToFile(TableModel data, String fileName) {
+        try {            
+            BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
+        for (int row = 0; row < data.getRowCount(); row++) {
+            String a = (String) data.getValueAt(row, 0);
+            bw.write(a + System.lineSeparator());
+            String b = (String) data.getValueAt(row, 1);
+            bw.write(b + System.lineSeparator());
+        }
+        bw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     public WebCrawler() {
         this.gui = new WebCrawlerGUI(this);
