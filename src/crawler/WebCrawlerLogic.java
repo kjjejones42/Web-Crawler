@@ -10,7 +10,7 @@ import java.net.*;
 
 import javax.swing.table.*;
 
-public class WebCrawlerLogic {
+class WebCrawlerLogic {
 
     private final String LINE_SEPARATOR = System.getProperty("line.separator");
 
@@ -157,7 +157,7 @@ public class WebCrawlerLogic {
         }
     }
 
-    public WebCrawlerLogic(WebCrawler gui){
+    WebCrawlerLogic(WebCrawler gui){
         this.gui = gui;
     }
 }

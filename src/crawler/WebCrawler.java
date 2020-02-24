@@ -6,7 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import javax.swing.table.TableModel;
 
-class WebCrawler extends JFrame {
+public class WebCrawler extends JFrame {
     
     static final long serialVersionUID = 1;
 
@@ -90,7 +90,7 @@ class WebCrawler extends JFrame {
         titlesTable.setModel(dataModel);
     }
 
-    WebCrawler() {        
+    public WebCrawler() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
