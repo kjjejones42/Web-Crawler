@@ -136,17 +136,16 @@ public class WebCrawler {
     void saveToFile(TableModel data, String fileName) {
         try {            
             BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
-        for (int row = 0; row < data.getRowCount(); row++) {
-            String a = (String) data.getValueAt(row, 0);
-            bw.write(a + System.lineSeparator());
-            String b = (String) data.getValueAt(row, 1);
-            bw.write(b + System.lineSeparator());
-        }
-        bw.close();
+            for (int row = 0; row < data.getRowCount(); row++) {
+                String a = (String) data.getValueAt(row, 0);
+                bw.write(a + System.lineSeparator());
+                String b = (String) data.getValueAt(row, 1);
+                bw.write(b + System.lineSeparator());
+            }
+            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public WebCrawler() {
