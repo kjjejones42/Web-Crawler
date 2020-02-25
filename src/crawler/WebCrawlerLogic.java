@@ -17,7 +17,6 @@ class WebCrawlerLogic {
         if (text == null || text.isEmpty()) {
             return;
         }
-        gui.setLoadingState();
         if (this.worker != null) {
             worker.cancel(true);
         }

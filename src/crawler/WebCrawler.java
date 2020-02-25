@@ -12,11 +12,11 @@ public class WebCrawler extends JFrame {
 
     private final WebCrawlerLogic webCrawler;
 
-    private final JScrollPane tableScrollPane;
     private final JTextField urlTextField;
-    private final JButton runButton;
-    private final JLabel titleLabel;
-    private final JTable titlesTable;
+    private final JToggleButton runButton;
+    private final JTextField depthTextField;
+    private final JCheckBox depthCheckBox;
+    private final JLabel parsedLabel;
     private final JTextField exportUrlTextField;
     private final JButton exportButton;
 
@@ -31,35 +31,54 @@ public class WebCrawler extends JFrame {
         c.fill = GridBagConstraints.BOTH;
 
         c.gridy = 0;
-        panel.add(new JLabel("URL: "), c);
-
+        panel.add(new JLabel("Start URL: "), c);
         c.weightx = 1;
+        c.gridwidth = 2;
         panel.add(urlTextField, c);
-
-        c.weightx = 0;
-        panel.add(runButton, c);
-
-        c.gridy = 1;
-        c.weightx = 0;
-        panel.add(new JLabel("Title: "), c);
-
-        c.weightx = 1;
-        panel.add(titleLabel, c);
-
-        c.gridy = 2;
-        c.weighty = 1;
-        c.gridwidth = GridBagConstraints.REMAINDER;
-        panel.add(tableScrollPane, c);
-
-        c.gridy = 3;
-        c.weighty = 0;
         c.weightx = 0;
         c.gridwidth = 1;
-        panel.add(new JLabel("Export"), c);
+        panel.add(runButton, c);
 
+        
+        c.gridy = 1;
+        panel.add(new JLabel("Workers: "), c);
         c.weightx = 1;
-        panel.add(exportUrlTextField, c);
+        c.gridwidth = GridBagConstraints.REMAINDER;
+        panel.add(new JTextField(), c);
+        c.gridwidth = 1;
+        c.weightx = 0;
 
+        c.gridy = 2;
+        panel.add(new JLabel("Max Depth: "), c);
+        c.weightx = 1;        
+        c.gridwidth = 2;
+        panel.add(depthTextField, c);        
+        c.gridwidth = 1;
+        c.weightx = 0;
+        panel.add(depthCheckBox, c);
+        
+        c.gridy = 3;
+        panel.add(new JLabel("Time Limit: "), c);
+        c.weightx = 1;
+        panel.add(new JTextField(), c);
+        c.weightx = 0;
+        panel.add(new JLabel("Seconds"), c);
+        panel.add(new JCheckBox("Enabled"), c);
+        
+        c.gridy = 4;
+        panel.add(new JLabel("Elapsed Time: "), c);
+        panel.add(new JLabel("00:00"), c);
+
+        c.gridy = 5;
+        panel.add(new JLabel("Parsed Pages: "), c);
+        panel.add(parsedLabel, c);
+
+        c.gridy = 6;
+        panel.add(new JLabel("Export: "), c);
+        c.weightx = 1;        
+        c.gridwidth = 2;
+        panel.add(exportUrlTextField, c);
+        c.gridwidth = 1;
         c.weightx = 0;
         panel.add(exportButton, c);
 
@@ -68,40 +87,18 @@ public class WebCrawler extends JFrame {
 
     private void setChildComponentNames() {
 
-        titlesTable.setName("TitlesTable");
-        urlTextField.setName("UrlTextField");
-        runButton.setName("RunButton");
-        titleLabel.setName("TitleLabel");
-        exportUrlTextField.setName("ExportUrlTextField");
-        exportButton.setName("ExportButton");
+        this.urlTextField.setName("UrlTextField;");
+        this.runButton.setName("RunButton;");
+        this.depthTextField.setName("DepthTextField;");
+        this.depthCheckBox.setName("DepthCheckBox;");
+        this.parsedLabel.setName("ParsedLabel;");
+        this.exportUrlTextField.setName("ExportUrlTextField;");
+        this.exportButton.setName("ExportButton;");
     }
 
     private void setChildComponentProperties() {
-        titlesTable.setEnabled(false);
-
-        runButton.addActionListener(e -> 
-            webCrawler.processUrlFromUser(urlTextField.getText())
-        );
-
-        exportButton.addActionListener(e ->
-            webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText())
-        );
     }
 
-    void setTitleLabel(String title) {
-        SwingUtilities.invokeLater(() -> titleLabel.setText(title));
-    }
-
-    void setTableModel(TableModel dataModel) {
-        SwingUtilities.invokeLater(() -> titlesTable.setModel(dataModel));
-    }
-
-    void setLoadingState() {
-        SwingUtilities.invokeLater(() -> {            
-            titlesTable.setModel(new DefaultTableModel());
-            titleLabel.setText("Loading...");
-        });
-    }
 
     public WebCrawler() {
         try {
@@ -111,16 +108,16 @@ public class WebCrawler extends JFrame {
         }
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(720, 480);
+        setSize(720, 300);
         setLocationRelativeTo(null);
         setTitle("Web Crawler");
 
-        this.webCrawler = new WebCrawlerLogic(this);
-        this.titlesTable = new JTable();
-        this.tableScrollPane = new JScrollPane(titlesTable);
+        this.webCrawler = new WebCrawlerLogic(null);
         this.urlTextField = new JTextField();
-        this.runButton = new JButton("Get Text!");
-        this.titleLabel = new JLabel();
+        this.runButton = new JToggleButton("Run");
+        this.depthTextField = new JTextField();
+        this.depthCheckBox = new JCheckBox("Enabled");
+        this.parsedLabel = new JLabel("0");
         this.exportUrlTextField = new JTextField();
         this.exportButton = new JButton("Save");
 
@@ -132,7 +129,7 @@ public class WebCrawler extends JFrame {
     }
 
     public static void main(String[] args) {
-        new WebCrawler2();
+        new WebCrawler();
     }
 
 }
