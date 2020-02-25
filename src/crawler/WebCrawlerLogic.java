@@ -2,25 +2,31 @@ package crawler;
 
 import java.io.*;
 import java.nio.file.*;
+import java.net.URL;
 
 class WebCrawlerLogic {
 
     private final WebCrawler gui;
-    private ProcessUrlWorker worker;
+    private URLProcessorManager processor;
 
     WebCrawler getGUI() {
         return gui;
     }
 
-    void processUrlFromUser(String text) {
+    void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) {
         if (text == null || text.isEmpty()) {
             return;
         }
-        if (this.worker != null) {
-            worker.cancel(true);
+        try {
+            if (this.processor != null) {
+                processor.cancel(true);
+            }
+            URL url = new URL(text);
+            this.processor = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
+            processor.execute();            
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        this.worker = new ProcessUrlWorker(text, this);
-        worker.execute();
     }
 
     void saveToFile(String fileName) {

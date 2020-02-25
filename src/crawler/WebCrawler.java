@@ -98,14 +98,24 @@ public class WebCrawler extends JFrame {
         this.exportButton.setName("ExportButton;");
     }
 
-    private void setChildComponentProperties() {
-        // TODO Add Button Functionality
-        runButton.addActionListener(e ->
-            webCrawler.processUrlFromUser(urlTextField.getText())
+    private void processRunButton(){        
+        webCrawler.processUrlFromUser(
+            urlTextField.getText(),
+            2, //Integer.parseInt(depthTextField.getText()),
+            10, //TODO
+            Long.MAX_VALUE //Long.parseLong(timeTextField.getText())
         );
+    }
+
+    private void setChildComponentProperties() {
+        runButton.addActionListener(e -> processRunButton());
         exportButton.addActionListener(e -> 
             webCrawler.saveToFile(exportUrlTextField.getText())
         );
+    }
+
+    synchronized void displayString(Object obj) {
+        System.out.println(obj);
     }
 
 
@@ -121,7 +131,7 @@ public class WebCrawler extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Web Crawler");
 
-        this.webCrawler = new WebCrawlerLogic(null);
+        this.webCrawler = new WebCrawlerLogic(this);
         this.urlTextField = new JTextField();
         this.runButton = new JToggleButton("Run");
         this.depthTextField = new JTextField();
