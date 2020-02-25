@@ -132,7 +132,7 @@ public class WebCrawler extends JFrame {
     }
 
     public static void main(String[] args) {
-        new WebCrawler();
+        new WebCrawler2();
     }
 
 }
