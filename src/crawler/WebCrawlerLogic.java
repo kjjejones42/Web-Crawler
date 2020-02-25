@@ -2,7 +2,6 @@ package crawler;
 
 import java.io.*;
 import java.nio.file.*;
-import javax.swing.table.*;
 
 class WebCrawlerLogic {
 
@@ -24,18 +23,19 @@ class WebCrawlerLogic {
         worker.execute();
     }
 
-    void saveToFile(TableModel data, String fileName) {
-        if (data == null || fileName == null || fileName.isEmpty()) {
+    void saveToFile(String fileName) {
+        // if (data == null || fileName == null || fileName.isEmpty()) {
+        if (fileName == null || fileName.isEmpty()) {
             return;
         }
         try {
             BufferedWriter bw = Files.newBufferedWriter(Path.of(fileName));
-            for (int row = 0; row < data.getRowCount(); row++) {
-                for (int col = 0; col < data.getColumnCount(); col++) {
-                    String line = (String) data.getValueAt(row, col);
-                    bw.write(line + System.lineSeparator());
-                }
-            }
+            // for (int row = 0; row < data.getRowCount(); row++) {
+            //     for (int col = 0; col < data.getColumnCount(); col++) {
+            //         String line = (String) data.getValueAt(row, col);
+            //         bw.write(line + System.lineSeparator());
+            //     }
+            // }
             bw.close();
         } catch (IOException e) {
             e.printStackTrace();

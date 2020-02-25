@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.Insets;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import javax.swing.table.*;
 
 public class WebCrawler extends JFrame {
 
@@ -16,6 +15,9 @@ public class WebCrawler extends JFrame {
     private final JToggleButton runButton;
     private final JTextField depthTextField;
     private final JCheckBox depthCheckBox;
+    private final JTextField timeTextField;
+    private final JCheckBox timeCheckBox;
+    private final JLabel timeLabel;
     private final JLabel parsedLabel;
     private final JTextField exportUrlTextField;
     private final JButton exportButton;
@@ -60,14 +62,14 @@ public class WebCrawler extends JFrame {
         c.gridy = 3;
         panel.add(new JLabel("Time Limit: "), c);
         c.weightx = 1;
-        panel.add(new JTextField(), c);
+        panel.add(timeTextField, c);
         c.weightx = 0;
         panel.add(new JLabel("Seconds"), c);
-        panel.add(new JCheckBox("Enabled"), c);
+        panel.add(timeCheckBox, c);
         
         c.gridy = 4;
         panel.add(new JLabel("Elapsed Time: "), c);
-        panel.add(new JLabel("00:00"), c);
+        panel.add(timeLabel, c);
 
         c.gridy = 5;
         panel.add(new JLabel("Parsed Pages: "), c);
@@ -97,6 +99,13 @@ public class WebCrawler extends JFrame {
     }
 
     private void setChildComponentProperties() {
+        // TODO Add Button Functionality
+        runButton.addActionListener(e ->
+            webCrawler.processUrlFromUser(urlTextField.getText())
+        );
+        exportButton.addActionListener(e -> 
+            webCrawler.saveToFile(exportUrlTextField.getText())
+        );
     }
 
 
@@ -117,6 +126,9 @@ public class WebCrawler extends JFrame {
         this.runButton = new JToggleButton("Run");
         this.depthTextField = new JTextField();
         this.depthCheckBox = new JCheckBox("Enabled");
+        this.timeTextField = new JTextField();
+        this.timeCheckBox = new JCheckBox("Enabled");
+        this.timeLabel = new JLabel("00:00");
         this.parsedLabel = new JLabel("0");
         this.exportUrlTextField = new JTextField();
         this.exportButton = new JButton("Save");
