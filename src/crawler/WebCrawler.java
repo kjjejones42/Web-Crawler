@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.Insets;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import javax.swing.table.TableModel;
+import javax.swing.table.*;
 
 public class WebCrawler extends JFrame {
 
@@ -84,11 +84,18 @@ public class WebCrawler extends JFrame {
     }
 
     void setTitleLabel(String title) {
-        titleLabel.setText(title);
+        SwingUtilities.invokeLater(() -> titleLabel.setText(title));
     }
 
     void setTableModel(TableModel dataModel) {
-        titlesTable.setModel(dataModel);
+        SwingUtilities.invokeLater(() -> titlesTable.setModel(dataModel));
+    }
+
+    void setLoadingState() {
+        SwingUtilities.invokeLater(() -> {            
+            titlesTable.setModel(new DefaultTableModel());
+            titleLabel.setText("Loading...");
+        });
     }
 
     public WebCrawler() {

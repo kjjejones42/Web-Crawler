@@ -9,7 +9,7 @@
             "name": "Debug (Launch)-WebCrawler<crawler>",
             "request": "launch",
             "mainClass": "crawler.WebCrawler",
-            "projectName": "crawler"
+            "projectName": "Web-Crawler"
         }
     ]
 }
