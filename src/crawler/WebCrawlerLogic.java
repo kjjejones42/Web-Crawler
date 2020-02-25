@@ -6,10 +6,12 @@ import javax.swing.table.*;
 
 class WebCrawlerLogic {
 
-    final String LINE_SEPARATOR = System.getProperty("line.separator");
-
-    final WebCrawler gui;
+    private final WebCrawler gui;
     private ProcessUrlWorker worker;
+
+    WebCrawler getGUI() {
+        return gui;
+    }
 
     void processUrlFromUser(String text) {
         if (text == null || text.isEmpty()) {

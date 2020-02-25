@@ -67,6 +67,7 @@ public class WebCrawler extends JFrame {
     }
 
     private void setChildComponentNames() {
+
         titlesTable.setName("TitlesTable");
         urlTextField.setName("UrlTextField");
         runButton.setName("RunButton");
@@ -77,10 +78,14 @@ public class WebCrawler extends JFrame {
 
     private void setChildComponentProperties() {
         titlesTable.setEnabled(false);
-        runButton.addActionListener(e -> webCrawler.processUrlFromUser(urlTextField.getText()));
-        exportButton
-                .addActionListener(e -> webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText()));
 
+        runButton.addActionListener(e -> 
+            webCrawler.processUrlFromUser(urlTextField.getText())
+        );
+
+        exportButton.addActionListener(e ->
+            webCrawler.saveToFile(titlesTable.getModel(), exportUrlTextField.getText())
+        );
     }
 
     void setTitleLabel(String title) {

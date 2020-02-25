@@ -7,17 +7,18 @@ import java.util.regex.*;
 import java.util.stream.Collectors;
 import java.nio.charset.StandardCharsets;
 import java.net.*;
-
 import javax.swing.SwingWorker;
 import javax.swing.table.*;
 
 class ProcessUrlWorker extends SwingWorker<TableModel,Void> {
 
-    String html;
-    String title;
+    final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private final WebCrawlerLogic parent;
     private final String text;
+    private String html;
+    private String title;
+    
     private URL url;
 
     ProcessUrlWorker(String text, WebCrawlerLogic parent) {
@@ -79,7 +80,7 @@ class ProcessUrlWorker extends SwingWorker<TableModel,Void> {
             String nextLine;
             while ((nextLine = reader.readLine()) != null) {
                 stringBuilder.append(nextLine);
-                stringBuilder.append(parent.LINE_SEPARATOR);
+                stringBuilder.append(LINE_SEPARATOR);
             }
             reader.close();
             return stringBuilder.toString();
@@ -142,18 +143,19 @@ class ProcessUrlWorker extends SwingWorker<TableModel,Void> {
         title = getTitleFromHTML(html);
         return HTMLToTable(html);
     }
-
+    
     @Override
     protected void done() {  
         if (!isCancelled()) { 
+            WebCrawler gui = parent.getGUI();
             try {
                 TableModel model = get();
-                parent.gui.setTableModel(model);
-                parent.gui.setTitleLabel(title);
+                gui.setTableModel(model);
+                gui.setTitleLabel(title);
             } catch (ExecutionException e) {
-                parent.gui.setTitleLabel(e.getCause().getMessage());
+                gui.setTitleLabel(e.getCause().getMessage());
             } catch (InterruptedException e) {
-                parent.gui.setTitleLabel(e.getMessage());
+                gui.setTitleLabel(e.getMessage());
             }
         }
     }
