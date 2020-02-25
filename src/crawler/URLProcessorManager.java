@@ -80,7 +80,6 @@ class URLProcessorManager extends SwingWorker<List<URL>, Void> {
                 futures.add(future);
             }
         } while (isStillRunning());
-        System.out.println();
         return null;
     }
     
@@ -89,6 +88,5 @@ class URLProcessorManager extends SwingWorker<List<URL>, Void> {
         WebCrawler gui = webCrawler.getGUI();
         gui.displayString(doneUrls);
         executor.shutdown();
-        System.exit(0);
     }
 }
