@@ -111,6 +111,6 @@ class URLProcessor implements Runnable {
         List<URL> urls = hrefsToURLs(hrefs);
         for (URL url : urls){
             manager.addUrlToQueue(url, depth + 1);
-        }        
+        }            
     }
 }

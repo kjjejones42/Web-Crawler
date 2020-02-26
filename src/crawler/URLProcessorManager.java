@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 class URLProcessorManager extends SwingWorker<List<String>, Void> {
 
-
     private final WebCrawlerLogic webCrawler;
     private final Queue<URL> urlQueue;
     private final Set<URL> doneUrls;
@@ -66,11 +65,13 @@ class URLProcessorManager extends SwingWorker<List<String>, Void> {
                 futures.add(future);
             }
         } while (isStillRunning());
-        return doneUrls.stream().map(URL::toString).collect(Collectors.toList());
+        List<String> r = doneUrls.stream().map(URL::toString).collect(Collectors.toList());
+        return r;
     }
     
     @Override
     protected void done() {
+        futures.forEach(i -> i.cancel(true));
         try {            
             webCrawler.setUrls(get());
         } catch (ExecutionException e) {

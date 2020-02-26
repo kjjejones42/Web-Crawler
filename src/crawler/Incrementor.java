@@ -1,7 +1,6 @@
 package crawler;
 
 import javax.swing.*;
-import java.util.concurrent.TimeUnit;
 
 class Incrementor implements Runnable {
 
@@ -17,11 +16,7 @@ class Incrementor implements Runnable {
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
-            long millis = System.currentTimeMillis() - startTime;
-            long MINUTES = TimeUnit.MILLISECONDS.toMinutes(millis);
-            String text = String.format("%02d:%02d", MINUTES,
-                TimeUnit.MILLISECONDS.toSeconds(millis) - 
-                TimeUnit.MINUTES.toSeconds(MINUTES));
+            String text = WebCrawler.formatDuration(System.currentTimeMillis() - startTime);
             if (!text.equals(lastText)) {                
                 SwingUtilities.invokeLater(() -> label.setText(text));
                 lastText = text;

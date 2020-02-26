@@ -5,10 +5,13 @@ import javax.swing.*;
 import java.awt.Insets;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.util.concurrent.TimeUnit;
 
 public class WebCrawler extends JFrame {
 
     static final long serialVersionUID = 1;
+    static final int DEFAULT_DEPTH = 1;
+    static final long DEFAULT_TIME = 120 * 1000;
 
     private final WebCrawlerLogic webCrawler;
 
@@ -26,11 +29,18 @@ public class WebCrawler extends JFrame {
     private final List<JComponent> editables;
 
     private Thread incrementor;
-    private int maxDepth; 
     private int workers; 
-    private long maxTime;
+    private int maxDepth = DEFAULT_DEPTH; 
+    private long maxTime = DEFAULT_TIME;
     private boolean isDepthOn;
     private boolean isTimeOn;
+
+    static String formatDuration(long millis) {
+        long MINUTES = TimeUnit.MILLISECONDS.toMinutes(millis);
+        return String.format("%02d:%02d", MINUTES,
+            TimeUnit.MILLISECONDS.toSeconds(millis) - 
+            TimeUnit.MINUTES.toSeconds(MINUTES));
+    }
 
     private void addChildComponents() {
 
@@ -112,7 +122,12 @@ public class WebCrawler extends JFrame {
             if (!validateInputs()){
                 throw new RuntimeException("The input values could not be parsed.");
             }            
-            webCrawler.processUrlFromUser(urlTextField.getText(), maxDepth, workers, maxTime);     
+            webCrawler.processUrlFromUser(
+                urlTextField.getText(),
+                isDepthOn ? maxDepth : DEFAULT_DEPTH,
+                workers,
+                isTimeOn ? maxTime : DEFAULT_TIME
+            );     
             resetLabelFields();
             startTimer();
             disableInput();
@@ -153,8 +168,10 @@ public class WebCrawler extends JFrame {
         isDepthOn = on;        
         depthTextField.setEnabled(on);
         if (on) {
+            depthTextField.setText(Integer.toString(maxDepth));
             editables.add(depthTextField);
         } else {
+            depthTextField.setText(Integer.toString(DEFAULT_DEPTH));
             editables.remove(depthTextField);
         }
     }
@@ -163,8 +180,10 @@ public class WebCrawler extends JFrame {
         isTimeOn = on;
         timeTextField.setEnabled(on);
         if (on) {
+            timeTextField.setText(Long.toString(maxTime / 1000));
             editables.add(timeTextField);
         } else {
+            timeTextField.setText(Long.toString(DEFAULT_TIME / 1000));
             editables.remove(timeTextField);
         }
     }
@@ -191,13 +210,14 @@ public class WebCrawler extends JFrame {
 
     private void resetLabelFields() {
         parsedLabel.setText("0");
-        timeLabel.setText("00:00");
+        timeLabel.setText(formatDuration(0));
     }
 
     synchronized void displayResults(List<String> urls) {
         stopTimer();
         JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
     }
+
     synchronized void displayError(String message) {
         stopTimer();
         JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.ERROR_MESSAGE);
@@ -237,7 +257,7 @@ public class WebCrawler extends JFrame {
         workersTextField = new JTextField("10");
         depthTextField = new JTextField("1");
         depthCheckBox = new JCheckBox("Enabled", true);
-        timeTextField = new JTextField("60.00");
+        timeTextField = new JTextField(Long.toString(DEFAULT_TIME / 1000));
         timeCheckBox = new JCheckBox("Enabled", true);
         timeLabel = new JLabel();
         parsedLabel = new JLabel();
