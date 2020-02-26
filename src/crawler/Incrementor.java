@@ -1,26 +1,28 @@
 package crawler;
 
 import javax.swing.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
-class Incrementor implements Runnable {
+class Incrementor extends Timer {    
 
     private final long startTime;
     private final JLabel label;
-    private String lastText;
 
     Incrementor(long startTime, JLabel label) {
         this.startTime = startTime;
         this.label = label;
     }
 
-    @Override
-    public void run() {
-        while (!Thread.currentThread().isInterrupted()) {
+    private TimerTask task = new TimerTask() {    
+        @Override
+        public void run() {     
             String text = WebCrawler.formatDuration(System.currentTimeMillis() - startTime);
-            if (!text.equals(lastText)) {                
-                SwingUtilities.invokeLater(() -> label.setText(text));
-                lastText = text;
-            }
-        }        
-    }
+            SwingUtilities.invokeLater(() -> label.setText(text));
+        }
+    };
+
+    public void run() {        
+        scheduleAtFixedRate(task, 0, 1000);  
+    }    
 }

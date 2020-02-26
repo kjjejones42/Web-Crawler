@@ -31,7 +31,6 @@ class URLProcessor implements Runnable {
             .map(href -> hrefToURL(firstUrl, href))
             .distinct()
             .filter(Objects::nonNull)
-            .filter(this::isUrlHTML)
             .collect(Collectors.toList());
     }
 
@@ -45,14 +44,6 @@ class URLProcessor implements Runnable {
             return new URL(base, relUrl);
         } catch (MalformedURLException e) {
             return null;
-        }
-    }
-
-    private boolean isUrlHTML(URL url) {
-        try {
-            return isUrlHTML(getURLConnection(url));            
-        } catch (IOException e) {
-            return false;
         }
     }
 

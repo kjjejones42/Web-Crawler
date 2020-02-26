@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 class URLProcessorManager extends SwingWorker<List<String>, Void> {
 
+    static final long NO_TIME_LIMIT = 0;
+
     private final WebCrawlerLogic webCrawler;
     private final Queue<URL> urlQueue;
     private final Set<URL> doneUrls;
@@ -18,14 +20,14 @@ class URLProcessorManager extends SwingWorker<List<String>, Void> {
     
     private volatile int depth = 0;
 
-    URLProcessorManager(URL rootUrl, WebCrawlerLogic webCrawler, int maxDepth, int workers, long endTime) {
-        this.endTime = endTime;
+    URLProcessorManager(URL rootUrl, WebCrawlerLogic webCrawler, int maxDepth, int workers, long maxTime) {
+        this.endTime = maxTime == NO_TIME_LIMIT ? Long.MAX_VALUE : System.currentTimeMillis() + maxTime;
         this.webCrawler = webCrawler;
         this.maxDepth = maxDepth;
-        this.doneUrls = new LinkedHashSet<>();
+        this.doneUrls = new HashSet<>();
         this.futures = new ArrayList<>();
 
-        this.urlQueue = new LinkedList<>();
+        this.urlQueue = new ArrayDeque<>();
         urlQueue.add(rootUrl);
         executor = Executors.newFixedThreadPool(workers);
     }
@@ -65,20 +67,21 @@ class URLProcessorManager extends SwingWorker<List<String>, Void> {
                 futures.add(future);
             }
         } while (isStillRunning());
-        List<String> r = doneUrls.stream().map(URL::toString).collect(Collectors.toList());
+        List<String> r = doneUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());
         return r;
     }
     
     @Override
     protected void done() {
-        futures.forEach(i -> i.cancel(true));
         try {            
+            futures.forEach(i -> i.cancel(true));
             webCrawler.setUrls(get());
         } catch (ExecutionException e) {
-            e.getCause().printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            System.err.println(e.getCause().getMessage());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        } finally {
+            executor.shutdown();
         }
-        executor.shutdown();
     }
 }

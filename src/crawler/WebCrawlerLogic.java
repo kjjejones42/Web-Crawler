@@ -3,8 +3,7 @@ package crawler;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-
-import java.net.URL;
+import java.net.*;
 
 class WebCrawlerLogic {
 
@@ -36,16 +35,11 @@ class WebCrawlerLogic {
         return gui;
     }
 
-    void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) {
-        try {
-            URL url = new URL(text);
-            cancelJob();
-            long endTime = System.currentTimeMillis() + maxTime;
-            this.processor = new URLProcessorManager(url, this, maxDepth, workers, endTime);
-            processor.execute();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) throws MalformedURLException {
+        URL url = new URL(text);
+        cancelJob();
+        this.processor = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
+        processor.execute();
     }
 
     void saveToFile(String fileName) {

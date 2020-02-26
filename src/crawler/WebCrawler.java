@@ -1,8 +1,10 @@
 package crawler;
 
 import java.util.*;
+import java.util.Timer;
 import javax.swing.*;
 import java.awt.Insets;
+import java.net.MalformedURLException;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +13,7 @@ public class WebCrawler extends JFrame {
 
     static final long serialVersionUID = 1;
     static final int DEFAULT_DEPTH = 1;
-    static final long DEFAULT_TIME = 120 * 1000;
+    static final long DEFAULT_TIME = URLProcessorManager.NO_TIME_LIMIT;
 
     private final WebCrawlerLogic webCrawler;
 
@@ -28,7 +30,7 @@ public class WebCrawler extends JFrame {
     private final JButton exportButton;
     private final List<JComponent> editables;
 
-    private Thread incrementor;
+    private Incrementor incrementor;
     private int workers; 
     private int maxDepth = DEFAULT_DEPTH; 
     private long maxTime = DEFAULT_TIME;
@@ -116,6 +118,7 @@ public class WebCrawler extends JFrame {
         exportUrlTextField.setName("ExportUrlTextField;");
         exportButton.setName("ExportButton;");
     }
+    
 
     private void processRunButtonOn() {
         try {
@@ -131,8 +134,10 @@ public class WebCrawler extends JFrame {
             resetLabelFields();
             startTimer();
             disableInput();
-        } catch (Exception e) {
-            displayError("Error: " + e.getCause().getMessage());
+        } catch (RuntimeException e) {            
+            displayError("Error: " + e.getMessage());
+        } catch (MalformedURLException e) {
+            displayError("Error: Invalid URL: " + e.getMessage());
         }
     }
 
@@ -143,21 +148,25 @@ public class WebCrawler extends JFrame {
     }
 
     private void startTimer() {        
-        incrementor = new Thread(new Incrementor(System.currentTimeMillis(), timeLabel));
-        incrementor.start();
+        incrementor = new Incrementor(System.currentTimeMillis(), timeLabel);
+        incrementor.run();
     }
 
     private void stopTimer() {
         if (incrementor != null){
-            incrementor.interrupt();
+            incrementor.cancel();
         }
     }
 
     private boolean validateInputs() {
         try {            
-            workers = Integer.parseInt(workersTextField.getText());              
-            maxDepth = Integer.parseInt(depthTextField.getText());               
-            maxTime = Double.valueOf(1000.0d * Double.parseDouble(timeTextField.getText())).longValue();
+            workers = Integer.parseInt(workersTextField.getText());  
+            if (isDepthOn) {
+                maxDepth = Integer.parseInt(depthTextField.getText()); 
+            }                      
+            if (isTimeOn) {  
+                maxTime = Double.valueOf(1000.0d * Double.parseDouble(timeTextField.getText())).longValue();
+            }
             return true;
         } catch (NumberFormatException | NullPointerException e) {   
             return false;
@@ -167,6 +176,7 @@ public class WebCrawler extends JFrame {
     private void setDepthOn(boolean on) {
         isDepthOn = on;        
         depthTextField.setEnabled(on);
+        depthCheckBox.setSelected(on);
         if (on) {
             depthTextField.setText(Integer.toString(maxDepth));
             editables.add(depthTextField);
@@ -179,22 +189,22 @@ public class WebCrawler extends JFrame {
     private void setTimeOn(boolean on) {
         isTimeOn = on;
         timeTextField.setEnabled(on);
+        timeCheckBox.setSelected(on);
         if (on) {
             timeTextField.setText(Long.toString(maxTime / 1000));
             editables.add(timeTextField);
         } else {
-            timeTextField.setText(Long.toString(DEFAULT_TIME / 1000));
+            timeTextField.setText("No time limit set.");
             editables.remove(timeTextField);
         }
     }
 
     private void setChildComponentProperties() {
 
-        runButton.addItemListener(e -> {
-            if (e.getStateChange() == 1) {
+        runButton.addActionListener(e -> {
+            if (runButton.isSelected()) {
                 processRunButtonOn();
-            }
-            if (e.getStateChange() == 2) {
+            } else {
                 processRunButtonOff();
             }
         });
@@ -215,11 +225,13 @@ public class WebCrawler extends JFrame {
 
     synchronized void displayResults(List<String> urls) {
         stopTimer();
+        runButton.setSelected(false);
         JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
     }
 
     synchronized void displayError(String message) {
         stopTimer();
+        runButton.setSelected(false);
         JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.ERROR_MESSAGE);
     }
 
@@ -255,10 +267,10 @@ public class WebCrawler extends JFrame {
         urlTextField = new JTextField();
         runButton = new JToggleButton("Run");
         workersTextField = new JTextField("10");
-        depthTextField = new JTextField("1");
-        depthCheckBox = new JCheckBox("Enabled", true);
-        timeTextField = new JTextField(Long.toString(DEFAULT_TIME / 1000));
-        timeCheckBox = new JCheckBox("Enabled", true);
+        depthTextField = new JTextField();
+        depthCheckBox = new JCheckBox("Enabled");
+        timeTextField = new JTextField();
+        timeCheckBox = new JCheckBox("Enabled");
         timeLabel = new JLabel();
         parsedLabel = new JLabel();
         exportUrlTextField = new JTextField(System.getProperty("user.home") +  System.getProperty("file.separator") + "results.txt");
@@ -270,6 +282,9 @@ public class WebCrawler extends JFrame {
         setChildComponentProperties();
         addChildComponents();
         resetLabelFields();
+
+        setDepthOn(true);
+        setTimeOn(false);
 
         setVisible(true);
     }
