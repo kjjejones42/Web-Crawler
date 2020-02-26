@@ -6,7 +6,7 @@ import javax.swing.SwingWorker;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-class URLProcessorManager extends SwingWorker<List<String>, Void> {
+class URLProcessorManager extends SwingWorker<Void, Void> {
 
     static final long NO_TIME_LIMIT = 0;
 
@@ -59,7 +59,7 @@ class URLProcessorManager extends SwingWorker<List<String>, Void> {
     }
 
     @Override
-    protected List<String> doInBackground() throws Exception {
+    protected Void doInBackground() throws Exception {
         URL url;
         do {
             if ((url = getUrlFromQueue()) != null) {
@@ -67,21 +67,14 @@ class URLProcessorManager extends SwingWorker<List<String>, Void> {
                 futures.add(future);
             }
         } while (isStillRunning());
-        List<String> r = doneUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());
-        return r;
+        return null;
     }
     
     @Override
-    protected void done() {
-        try {            
-            futures.forEach(i -> i.cancel(true));
-            webCrawler.setUrls(get());
-        } catch (ExecutionException e) {
-            System.err.println(e.getCause().getMessage());
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        } finally {
-            executor.shutdown();
-        }
+    protected void done() { 
+        futures.forEach(i -> i.cancel(true));
+        List<String> result = doneUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());      
+        webCrawler.setUrls(result);
+        executor.shutdown();
     }
 }

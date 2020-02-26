@@ -4,12 +4,12 @@ import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
 
-class Incrementor extends Timer {    
+class URLProcessTimer extends Timer {    
 
     private final long startTime;
     private final JLabel label;
 
-    Incrementor(long startTime, JLabel label) {
+    URLProcessTimer(long startTime, JLabel label) {
         this.startTime = startTime;
         this.label = label;
     }

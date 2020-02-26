@@ -1,7 +1,6 @@
 package crawler;
 
 import java.util.*;
-import java.util.Timer;
 import javax.swing.*;
 import java.awt.Insets;
 import java.net.MalformedURLException;
@@ -30,7 +29,7 @@ public class WebCrawler extends JFrame {
     private final JButton exportButton;
     private final List<JComponent> editables;
 
-    private Incrementor incrementor;
+    private URLProcessTimer incrementor;
     private int workers; 
     private int maxDepth = DEFAULT_DEPTH; 
     private long maxTime = DEFAULT_TIME;
@@ -149,7 +148,7 @@ public class WebCrawler extends JFrame {
 
     private void startTimer() {  
         stopTimer(); 
-        incrementor = new Incrementor(System.currentTimeMillis(), timeLabel);
+        incrementor = new URLProcessTimer(System.currentTimeMillis(), timeLabel);
         incrementor.run();
     }
 
