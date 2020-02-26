@@ -2,9 +2,6 @@ package crawler;
 
 import java.util.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import java.net.*;
-
 import java.awt.Insets;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
@@ -32,6 +29,8 @@ public class WebCrawler extends JFrame {
     private int maxDepth; 
     private int workers; 
     private long maxTime;
+    private boolean isDepthOn;
+    private boolean isTimeOn;
 
     private void addChildComponents() {
 
@@ -99,14 +98,13 @@ public class WebCrawler extends JFrame {
     }
 
     private void setChildComponentNames() {
-
-        this.urlTextField.setName("UrlTextField;");
-        this.runButton.setName("RunButton;");
-        this.depthTextField.setName("DepthTextField;");
-        this.depthCheckBox.setName("DepthCheckBox;");
-        this.parsedLabel.setName("ParsedLabel;");
-        this.exportUrlTextField.setName("ExportUrlTextField;");
-        this.exportButton.setName("ExportButton;");
+        urlTextField.setName("UrlTextField;");
+        runButton.setName("RunButton;");
+        depthTextField.setName("DepthTextField;");
+        depthCheckBox.setName("DepthCheckBox;");
+        parsedLabel.setName("ParsedLabel;");
+        exportUrlTextField.setName("ExportUrlTextField;");
+        exportButton.setName("ExportButton;");
     }
 
     private void processRunButtonOn() {
@@ -117,9 +115,16 @@ public class WebCrawler extends JFrame {
             webCrawler.processUrlFromUser(urlTextField.getText(), maxDepth, workers, maxTime);     
             resetLabelFields();
             startTimer();
+            disableInput();
         } catch (Exception e) {
             displayError("Error: " + e.getCause().getMessage());
         }
+    }
+
+    private void processRunButtonOff(){      
+        webCrawler.cancelJob();
+        stopTimer();
+        enableInput();
     }
 
     private void startTimer() {        
@@ -133,38 +138,60 @@ public class WebCrawler extends JFrame {
         }
     }
 
-    private void processRunButtonOff(){      
-        webCrawler.cancelJob();
-        stopTimer();
-        enableInput();
-    }
-
     private boolean validateInputs() {
         try {            
-            this.workers = Integer.parseInt(workersTextField.getText());              
-            this.maxDepth = Integer.parseInt(depthTextField.getText());               
-            this.maxTime = Double.valueOf(1000.0d * Double.parseDouble(timeTextField.getText())).longValue();
+            workers = Integer.parseInt(workersTextField.getText());              
+            maxDepth = Integer.parseInt(depthTextField.getText());               
+            maxTime = Double.valueOf(1000.0d * Double.parseDouble(timeTextField.getText())).longValue();
             return true;
-        } catch (NumberFormatException | ClassCastException e) {   
+        } catch (NumberFormatException | NullPointerException e) {   
             return false;
         }
     }
 
+    private void setDepthOn(boolean on) {
+        isDepthOn = on;        
+        depthTextField.setEnabled(on);
+        if (on) {
+            editables.add(depthTextField);
+        } else {
+            editables.remove(depthTextField);
+        }
+    }
+    
+    private void setTimeOn(boolean on) {
+        isTimeOn = on;
+        timeTextField.setEnabled(on);
+        if (on) {
+            editables.add(timeTextField);
+        } else {
+            editables.remove(timeTextField);
+        }
+    }
+
     private void setChildComponentProperties() {
+
         runButton.addItemListener(e -> {
-            if(e.getStateChange() == 1)
+            if (e.getStateChange() == 1) {
                 processRunButtonOn();
-            if(e.getStateChange() == 2)
+            }
+            if (e.getStateChange() == 2) {
                 processRunButtonOff();
+            }
         });
+
         exportButton.addActionListener(e -> 
             webCrawler.saveToFile(exportUrlTextField.getText())
         );
+
+        depthCheckBox.addActionListener(e -> setDepthOn(depthCheckBox.isSelected()));
+
+        timeCheckBox.addActionListener(e -> setTimeOn(timeCheckBox.isSelected()));
     }
 
     private void resetLabelFields() {
-        this.parsedLabel.setText("0");
-        this.timeLabel.setText("00:00");
+        parsedLabel.setText("0");
+        timeLabel.setText("00:00");
     }
 
     synchronized void displayResults(List<String> urls) {
@@ -204,20 +231,20 @@ public class WebCrawler extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Web Crawler");
 
-        this.webCrawler = new WebCrawlerLogic(this);
-        this.urlTextField = new JTextField();
-        this.runButton = new JToggleButton("Run");
-        this.workersTextField = new JTextField("10");
-        this.depthTextField = new JTextField("1");
-        this.depthCheckBox = new JCheckBox("Enabled", true);
-        this.timeTextField = new JTextField("60.00");
-        this.timeCheckBox = new JCheckBox("Enabled", true);
-        this.timeLabel = new JLabel();
-        this.parsedLabel = new JLabel();
-        this.exportUrlTextField = new JTextField(System.getProperty("user.home") +  System.getProperty("file.separator") + "results.txt");
-        this.exportButton = new JButton("Save");
+        webCrawler = new WebCrawlerLogic(this);
+        urlTextField = new JTextField();
+        runButton = new JToggleButton("Run");
+        workersTextField = new JTextField("10");
+        depthTextField = new JTextField("1");
+        depthCheckBox = new JCheckBox("Enabled", true);
+        timeTextField = new JTextField("60.00");
+        timeCheckBox = new JCheckBox("Enabled", true);
+        timeLabel = new JLabel();
+        parsedLabel = new JLabel();
+        exportUrlTextField = new JTextField(System.getProperty("user.home") +  System.getProperty("file.separator") + "results.txt");
+        exportButton = new JButton("Save");
 
-        this.editables = List.of(urlTextField, workersTextField, depthTextField, depthCheckBox, timeTextField, timeCheckBox, exportUrlTextField, exportButton);
+        editables = new ArrayList<>(List.of(urlTextField, workersTextField, depthTextField, depthCheckBox, timeTextField, timeCheckBox, exportUrlTextField, exportButton));
 
         setChildComponentNames();
         setChildComponentProperties();

@@ -40,7 +40,6 @@ class WebCrawlerLogic {
         try {
             URL url = new URL(text);
             cancelJob();
-            gui.disableInput();
             long endTime = System.currentTimeMillis() + maxTime;
             this.processor = new URLProcessorManager(url, this, maxDepth, workers, endTime);
             processor.execute();
