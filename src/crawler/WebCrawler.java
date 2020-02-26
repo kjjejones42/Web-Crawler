@@ -147,7 +147,8 @@ public class WebCrawler extends JFrame {
         enableInput();
     }
 
-    private void startTimer() {        
+    private void startTimer() {  
+        stopTimer(); 
         incrementor = new Incrementor(System.currentTimeMillis(), timeLabel);
         incrementor.run();
     }

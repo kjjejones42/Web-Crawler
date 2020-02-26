@@ -18,6 +18,7 @@ class WebCrawlerLogic {
     }
 
     void setUrls(List<String> urls) {
+        System.out.println(urls);
         gui.enableInput();
         this.urls = urls;
         if (urls.isEmpty()) {
