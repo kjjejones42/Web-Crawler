@@ -4,8 +4,9 @@ import java.util.*;
 import java.net.*;
 import javax.swing.SwingWorker;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
-class URLProcessorManager extends SwingWorker<List<URL>, Void> {
+class URLProcessorManager extends SwingWorker<List<String>, Void> {
 
 
     private final WebCrawlerLogic webCrawler;
@@ -16,7 +17,7 @@ class URLProcessorManager extends SwingWorker<List<URL>, Void> {
     private final long endTime;
     private final ExecutorService executor;
     
-    private int depth = 0;
+    private volatile int depth = 0;
 
     URLProcessorManager(URL rootUrl, WebCrawlerLogic webCrawler, int maxDepth, int workers, long endTime) {
         this.endTime = endTime;
@@ -43,22 +44,21 @@ class URLProcessorManager extends SwingWorker<List<URL>, Void> {
     }
     
     synchronized void addUrlToQueue(URL url, int depth) {
-        if (!doneUrls.contains(url) && depth <= maxDepth) {
+        if (url != null && !doneUrls.contains(url) && depth <= maxDepth) {
             this.depth = Math.max(depth, this.depth);
             urlQueue.add(url);
+            doneUrls.add(url);
+            webCrawler.updateCount(doneUrls.size());
         }
     }
 
     synchronized URL getUrlFromQueue() {
         URL url = this.urlQueue.poll();
-        if (url != null) {
-            doneUrls.add(url);
-        }
         return url;
     }
 
     @Override
-    protected List<URL> doInBackground() throws Exception {
+    protected List<String> doInBackground() throws Exception {
         URL url;
         do {
             if ((url = getUrlFromQueue()) != null) {
@@ -66,11 +66,18 @@ class URLProcessorManager extends SwingWorker<List<URL>, Void> {
                 futures.add(future);
             }
         } while (isStillRunning());
-        return new ArrayList<>(doneUrls);
+        return doneUrls.stream().map(URL::toString).collect(Collectors.toList());
     }
     
     @Override
-    protected void done() {  ;
+    protected void done() {
+        try {            
+            webCrawler.setUrls(get());
+        } catch (ExecutionException e) {
+            e.getCause().printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         executor.shutdown();
     }
 }

@@ -1,5 +1,6 @@
 package crawler;
 
+import java.util.*;
 import javax.swing.*;
 import java.awt.Insets;
 import java.awt.GridBagLayout;
@@ -13,6 +14,7 @@ public class WebCrawler extends JFrame {
 
     private final JTextField urlTextField;
     private final JToggleButton runButton;
+    private final JTextField workersTextField;
     private final JTextField depthTextField;
     private final JCheckBox depthCheckBox;
     private final JTextField timeTextField;
@@ -21,6 +23,9 @@ public class WebCrawler extends JFrame {
     private final JLabel parsedLabel;
     private final JTextField exportUrlTextField;
     private final JButton exportButton;
+    private final List<JComponent> editables;
+
+    private Thread incrementor;
 
     private void addChildComponents() {
 
@@ -46,7 +51,7 @@ public class WebCrawler extends JFrame {
         panel.add(new JLabel("Workers: "), c);
         c.weightx = 1;
         c.gridwidth = GridBagConstraints.REMAINDER;
-        panel.add(new JTextField(), c);
+        panel.add(workersTextField, c);
         c.gridwidth = 1;
         c.weightx = 0;
 
@@ -98,7 +103,8 @@ public class WebCrawler extends JFrame {
         this.exportButton.setName("ExportButton;");
     }
 
-    private void processRunButton(){        
+    private void processRunButtonOn() {   
+        resetLabelFields();
         webCrawler.processUrlFromUser(
             urlTextField.getText(),
             2, //Integer.parseInt(depthTextField.getText()),
@@ -107,17 +113,47 @@ public class WebCrawler extends JFrame {
         );
     }
 
+    private void processRunButtonOff(){      
+        webCrawler.cancelJob();
+        enableInput();
+    }
+
     private void setChildComponentProperties() {
-        runButton.addActionListener(e -> processRunButton());
+        runButton.addItemListener(e -> {
+            if(e.getStateChange() == 1)
+                processRunButtonOn();
+            if(e.getStateChange() == 2)
+                processRunButtonOff();
+        });
         exportButton.addActionListener(e -> 
             webCrawler.saveToFile(exportUrlTextField.getText())
         );
     }
 
-    synchronized void displayString(Object obj) {
-        System.out.println(obj);
+    private void resetLabelFields() {
+        this.parsedLabel.setText("0");
+        this.timeLabel.setText("00:00");
     }
 
+    synchronized void displayResults(List<String> urls) {
+        JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    void disableInput() {
+        for (JComponent c : editables) {
+            c.setEnabled(false);
+        }
+    }
+
+    void enableInput() {
+        for (JComponent c : editables) {
+            c.setEnabled(true);
+        }
+    }
+
+    void updateCount(int count) {
+        SwingUtilities.invokeLater(() -> parsedLabel.setText(Integer.toString(count)));
+    }
 
     public WebCrawler() {
         try {
@@ -134,18 +170,22 @@ public class WebCrawler extends JFrame {
         this.webCrawler = new WebCrawlerLogic(this);
         this.urlTextField = new JTextField();
         this.runButton = new JToggleButton("Run");
+        this.workersTextField = new JTextField();
         this.depthTextField = new JTextField();
         this.depthCheckBox = new JCheckBox("Enabled");
         this.timeTextField = new JTextField();
         this.timeCheckBox = new JCheckBox("Enabled");
-        this.timeLabel = new JLabel("00:00");
-        this.parsedLabel = new JLabel("0");
+        this.timeLabel = new JLabel();
+        this.parsedLabel = new JLabel();
         this.exportUrlTextField = new JTextField();
         this.exportButton = new JButton("Save");
+
+        this.editables = List.of(urlTextField, workersTextField, depthTextField, depthCheckBox, timeTextField, timeCheckBox, exportUrlTextField, exportButton);
 
         setChildComponentNames();
         setChildComponentProperties();
         addChildComponents();
+        resetLabelFields();
 
         setVisible(true);
     }

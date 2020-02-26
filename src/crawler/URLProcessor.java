@@ -5,8 +5,6 @@ import java.util.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
-
 import java.nio.charset.StandardCharsets;
 import java.net.*;
 
@@ -23,7 +21,6 @@ class URLProcessor implements Runnable {
     }
 
     URLProcessor(URL firstUrl, URLProcessorManager manager, int depth){
-        System.out.println("BEGAN | " + depth + " | " + firstUrl);
         this.firstUrl = firstUrl;
         this.manager = manager;
         this.depth = depth;
@@ -32,8 +29,9 @@ class URLProcessor implements Runnable {
     private List<URL> hrefsToURLs(List<String> input) {
         return input.stream()
             .map(href -> hrefToURL(firstUrl, href))
-            .filter(Objects::nonNull)
             .distinct()
+            .filter(Objects::nonNull)
+            .filter(this::isUrlHTML)
             .collect(Collectors.toList());
     }
 
@@ -47,6 +45,14 @@ class URLProcessor implements Runnable {
             return new URL(base, relUrl);
         } catch (MalformedURLException e) {
             return null;
+        }
+    }
+
+    private boolean isUrlHTML(URL url) {
+        try {
+            return isUrlHTML(getURLConnection(url));            
+        } catch (IOException e) {
+            return false;
         }
     }
 
@@ -95,7 +101,6 @@ class URLProcessor implements Runnable {
         URLConnection con = url.openConnection();
         con.setRequestProperty("User-Agent",
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
-                con.getContentType();
         return con;
     }
 
