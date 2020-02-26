@@ -20,8 +20,12 @@ class WebCrawlerLogic {
 
     void setUrls(List<String> urls) {
         gui.enableInput();
-        gui.displayResults(urls);
         this.urls = urls;
+        if (urls.isEmpty()) {
+            gui.displayError("The initial URL is invalid.");
+        } else {
+            gui.displayResults(urls);
+        }
     }
 
     void updateCount(int count) {
@@ -33,17 +37,15 @@ class WebCrawlerLogic {
     }
 
     void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) {
-        if (text == null || text.isEmpty()) {
-            return;
-        }
         try {
             URL url = new URL(text);
             cancelJob();
             gui.disableInput();
-            this.processor = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
+            long endTime = System.currentTimeMillis() + maxTime;
+            this.processor = new URLProcessorManager(url, this, maxDepth, workers, endTime);
             processor.execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
