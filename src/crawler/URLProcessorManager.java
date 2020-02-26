@@ -12,7 +12,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
 
     private final WebCrawlerLogic webCrawler;
     private final Queue<URL> urlQueue;
-    private final Set<URL> doneUrls;
+    private final Set<URL> processedUrls;
     private final List<Future<?>> futures;
     private final int maxDepth;
     private final long endTime;
@@ -24,7 +24,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         this.endTime = maxTime == NO_TIME_LIMIT ? Long.MAX_VALUE : System.currentTimeMillis() + maxTime;
         this.webCrawler = webCrawler;
         this.maxDepth = maxDepth;
-        this.doneUrls = new HashSet<>();
+        this.processedUrls = new HashSet<>();
         this.futures = new ArrayList<>();
 
         this.urlQueue = new ArrayDeque<>();
@@ -45,11 +45,11 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
     }
     
     synchronized void addUrlToQueue(URL url, int depth) {
-        if (url != null && !doneUrls.contains(url) && depth <= maxDepth) {
+        if (url != null && !processedUrls.contains(url) && depth <= maxDepth) {
             this.depth = Math.max(depth, this.depth);
             urlQueue.add(url);
-            doneUrls.add(url);
-            webCrawler.updateCount(doneUrls.size());
+            processedUrls.add(url);
+            webCrawler.updateCount(processedUrls.size());
         }
     }
 
@@ -73,7 +73,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
     @Override
     protected void done() { 
         futures.forEach(i -> i.cancel(true));
-        List<String> result = doneUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());      
+        List<String> result = processedUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());      
         webCrawler.setUrls(result);
         executor.shutdown();
     }

@@ -8,12 +8,12 @@ import java.net.*;
 class WebCrawlerLogic {
 
     private final WebCrawler gui;
-    private URLProcessorManager processor;
+    private URLProcessorManager worker;
     private List<String> urls;
 
     void cancelJob() {        
-        if (this.processor != null) {
-            processor.cancel(true);
+        if (this.worker != null) {
+            worker.cancel(true);
         }        
     }
 
@@ -31,15 +31,11 @@ class WebCrawlerLogic {
         gui.updateCount(count);
     }
 
-    WebCrawler getGUI() {
-        return gui;
-    }
-
     void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) throws MalformedURLException {
         URL url = new URL(text);
         cancelJob();
-        this.processor = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
-        processor.execute();
+        this.worker = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
+        worker.execute();
     }
 
     void saveToFile(String fileName) {

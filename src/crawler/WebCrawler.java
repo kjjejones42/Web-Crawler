@@ -29,12 +29,12 @@ public class WebCrawler extends JFrame {
     private final JButton exportButton;
     private final List<JComponent> editables;
 
-    private URLProcessTimer incrementor;
-    private int workers; 
+    private URLProcessTimer timer;
+    private int numWorkers; 
     private int maxDepth = DEFAULT_DEPTH; 
     private long maxTime = DEFAULT_TIME;
-    private boolean isDepthOn;
-    private boolean isTimeOn;
+    private boolean depthOption;
+    private boolean timeOption;
 
     static String formatDuration(long millis) {
         long MINUTES = TimeUnit.MILLISECONDS.toMinutes(millis);
@@ -126,9 +126,9 @@ public class WebCrawler extends JFrame {
             }            
             webCrawler.processUrlFromUser(
                 urlTextField.getText(),
-                isDepthOn ? maxDepth : DEFAULT_DEPTH,
-                workers,
-                isTimeOn ? maxTime : DEFAULT_TIME
+                depthOption ? maxDepth : DEFAULT_DEPTH,
+                numWorkers,
+                timeOption ? maxTime : DEFAULT_TIME
             );     
             resetLabelFields();
             startTimer();
@@ -148,23 +148,23 @@ public class WebCrawler extends JFrame {
 
     private void startTimer() {  
         stopTimer(); 
-        incrementor = new URLProcessTimer(System.currentTimeMillis(), timeLabel);
-        incrementor.run();
+        timer = new URLProcessTimer(System.currentTimeMillis(), timeLabel);
+        timer.run();
     }
 
     private void stopTimer() {
-        if (incrementor != null){
-            incrementor.cancel();
+        if (timer != null){
+            timer.cancel();
         }
     }
 
     private boolean validateInputs() {
         try {            
-            workers = Integer.parseInt(workersTextField.getText());  
-            if (isDepthOn) {
+            numWorkers = Integer.parseInt(workersTextField.getText());  
+            if (depthOption) {
                 maxDepth = Integer.parseInt(depthTextField.getText()); 
             }                      
-            if (isTimeOn) {  
+            if (timeOption) {  
                 maxTime = Double.valueOf(1000.0d * Double.parseDouble(timeTextField.getText())).longValue();
             }
             return true;
@@ -173,8 +173,8 @@ public class WebCrawler extends JFrame {
         }
     }
 
-    private void setDepthOn(boolean on) {
-        isDepthOn = on;        
+    private void setDepthOption(boolean on) {
+        depthOption = on;        
         depthTextField.setEnabled(on);
         depthCheckBox.setSelected(on);
         if (on) {
@@ -186,8 +186,8 @@ public class WebCrawler extends JFrame {
         }
     }
     
-    private void setTimeOn(boolean on) {
-        isTimeOn = on;
+    private void setTimeOption(boolean on) {
+        timeOption = on;
         timeTextField.setEnabled(on);
         timeCheckBox.setSelected(on);
         if (on) {
@@ -213,9 +213,9 @@ public class WebCrawler extends JFrame {
             webCrawler.saveToFile(exportUrlTextField.getText())
         );
 
-        depthCheckBox.addActionListener(e -> setDepthOn(depthCheckBox.isSelected()));
+        depthCheckBox.addActionListener(e -> setDepthOption(depthCheckBox.isSelected()));
 
-        timeCheckBox.addActionListener(e -> setTimeOn(timeCheckBox.isSelected()));
+        timeCheckBox.addActionListener(e -> setTimeOption(timeCheckBox.isSelected()));
     }
 
     private void resetLabelFields() {
@@ -283,8 +283,8 @@ public class WebCrawler extends JFrame {
         addChildComponents();
         resetLabelFields();
 
-        setDepthOn(true);
-        setTimeOn(false);
+        setDepthOption(true);
+        setTimeOption(false);
 
         setVisible(true);
     }

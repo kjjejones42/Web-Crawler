@@ -12,8 +12,8 @@ class URLProcessor implements Runnable {
 
     final static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-    private final URL firstUrl;
-    private final URLProcessorManager manager;
+    private final URL rootUrl;
+    private final URLProcessorManager executor;
     private final int depth;
 
     URLProcessor(URL firstUrl, URLProcessorManager manager) {
@@ -21,14 +21,14 @@ class URLProcessor implements Runnable {
     }
 
     URLProcessor(URL firstUrl, URLProcessorManager manager, int depth){
-        this.firstUrl = firstUrl;
-        this.manager = manager;
+        this.rootUrl = firstUrl;
+        this.executor = manager;
         this.depth = depth;
     }
     
     private List<URL> hrefsToURLs(List<String> input) {
         return input.stream()
-            .map(href -> hrefToURL(firstUrl, href))
+            .map(href -> hrefToURL(rootUrl, href))
             .distinct()
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
@@ -80,7 +80,7 @@ class URLProcessor implements Runnable {
 
     private List<String> getHrefsFromHTML(String html) {
         List<String> results = new ArrayList<>();
-        results.add(firstUrl.toString());
+        results.add(rootUrl.toString());
         Matcher m = Pattern.compile("(?<=href=['\"]?)[^\\s'\">]+").matcher(html);
         while (m.find()) {
             results.add(m.group());
@@ -97,11 +97,11 @@ class URLProcessor implements Runnable {
 
     @Override
     public void run() {
-        String html = getHTMLFromURL(firstUrl);
+        String html = getHTMLFromURL(rootUrl);
         List<String> hrefs = getHrefsFromHTML(html);
         List<URL> urls = hrefsToURLs(hrefs);
         for (URL url : urls){
-            manager.addUrlToQueue(url, depth + 1);
+            executor.addUrlToQueue(url, depth + 1);
         }            
     }
 }
