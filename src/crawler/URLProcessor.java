@@ -4,6 +4,9 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
+
+import javax.management.RuntimeErrorException;
+
 import java.nio.charset.StandardCharsets;
 import java.net.*;
 
@@ -47,9 +50,21 @@ class URLProcessor implements Runnable {
         }
     }
 
+    private boolean isUrlHTML(URLConnection con) {
+        String contentType = con.getContentType();
+        if (contentType == null) {
+            return false;
+        }
+        return contentType.contains("text/html");
+    }
+
     private String getHTMLFromURL(URL url) {
         try {
-            final InputStream inputStream = getURLConnection(url).getInputStream();
+            final URLConnection con = getURLConnection(url);
+            if (!isUrlHTML(con)){
+                throw new RuntimeException("URL content type was not HTML");
+            }
+            final InputStream inputStream = con.getInputStream();
             final BufferedReader reader = new BufferedReader(
                     new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             final StringBuilder stringBuilder = new StringBuilder();
@@ -77,10 +92,10 @@ class URLProcessor implements Runnable {
     }
 
     private URLConnection getURLConnection(URL url) throws IOException {
-        System.out.println("GET   | " + depth + " | "+  url);
         URLConnection con = url.openConnection();
         con.setRequestProperty("User-Agent",
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:63.0) Gecko/20100101 Firefox/63.0");
+                con.getContentType();
         return con;
     }
 

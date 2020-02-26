@@ -2,6 +2,10 @@ package crawler;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.concurrent.ExecutionException;
+
+import javax.swing.SwingUtilities;
+
 import java.net.URL;
 
 class WebCrawlerLogic {
@@ -23,7 +27,16 @@ class WebCrawlerLogic {
             }
             URL url = new URL(text);
             this.processor = new URLProcessorManager(url, this, maxDepth, workers, maxTime);
-            processor.execute();            
+            processor.execute();
+            SwingUtilities.invokeLater(() -> {                
+                try {
+                    getGUI().displayString(processor.get());                    
+                } catch (ExecutionException e) {
+                    e.getCause().printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
