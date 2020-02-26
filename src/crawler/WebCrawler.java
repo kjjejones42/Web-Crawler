@@ -111,10 +111,13 @@ public class WebCrawler extends JFrame {
             10, //TODO
             Long.MAX_VALUE //Long.parseLong(timeTextField.getText())
         );
+        incrementor = new Thread(new Incrementor(System.currentTimeMillis(), timeLabel));
+        incrementor.start();
     }
 
     private void processRunButtonOff(){      
         webCrawler.cancelJob();
+        incrementor.interrupt();
         enableInput();
     }
 
@@ -136,6 +139,7 @@ public class WebCrawler extends JFrame {
     }
 
     synchronized void displayResults(List<String> urls) {
+        incrementor.interrupt();
         JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
     }
 
