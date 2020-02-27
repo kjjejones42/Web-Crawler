@@ -24,19 +24,35 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         this.endTime = maxTime == NO_TIME_LIMIT ? Long.MAX_VALUE : System.currentTimeMillis() + maxTime;
         this.webCrawler = webCrawler;
         this.maxDepth = maxDepth;
-        this.processedUrls = new HashSet<>();
+        this.processedUrls = ConcurrentHashMap.newKeySet();
         this.futures = new ArrayList<>();
 
-        this.urlQueue = new ArrayDeque<>();
+        this.urlQueue = new ConcurrentLinkedQueue<>();
         urlQueue.add(rootUrl);
         executor = Executors.newFixedThreadPool(workers);
     }
     
-    private synchronized boolean areFuturesRunning() {
-        return futures.stream().anyMatch(i -> !i.isDone());
+    private boolean areFuturesRunning() {
+        boolean result;
+        synchronized (futures) {
+            result = futures.stream().anyMatch(i -> !i.isDone());
+        }
+        return result;
     }
 
-    private synchronized boolean isStillRunning() {
+    private void addFuture(Future<?> future) {
+        synchronized (futures) {
+            futures.add(future);
+        }
+    }
+
+    private void cancelFutures() {
+        synchronized (futures) {            
+            futures.forEach(i -> i.cancel(true));
+        }
+    }
+
+    private boolean isStillRunning() {
         boolean a = areFuturesRunning();
         boolean b = isCancelled();
         boolean c = depth > maxDepth;
@@ -44,7 +60,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         return a && !(b || c || d);
     }
     
-    synchronized void addUrlToQueue(URL url, int depth) {
+    void addUrlToQueue(URL url, int depth) {
         if (url != null && !processedUrls.contains(url) && depth <= maxDepth) {
             this.depth = Math.max(depth, this.depth);
             urlQueue.add(url);
@@ -53,7 +69,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         }
     }
 
-    synchronized URL getUrlFromQueue() {
+    URL getUrlFromQueue() {
         URL url = this.urlQueue.poll();
         return url;
     }
@@ -64,7 +80,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         do {
             if ((url = getUrlFromQueue()) != null) {
                 Future<?> future = executor.submit(new URLProcessor(url, this, depth));
-                futures.add(future);
+                addFuture(future);
             }
         } while (isStillRunning());
         return null;
@@ -72,7 +88,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
     
     @Override
     protected void done() { 
-        futures.forEach(i -> i.cancel(true));
+        cancelFutures();
         List<String> result = processedUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());      
         webCrawler.setUrls(result);
         executor.shutdown();

@@ -223,13 +223,13 @@ public class WebCrawler extends JFrame {
         timeLabel.setText(formatDuration(0));
     }
 
-    synchronized void displayResults(List<String> urls) {
+    void displayResults(List<String> urls) {
         stopTimer();
         runButton.setSelected(false);
         JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
     }
 
-    synchronized void displayError(String message) {
+    void displayError(String message) {
         stopTimer();
         runButton.setSelected(false);
         JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.ERROR_MESSAGE);
