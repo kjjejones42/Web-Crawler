@@ -49,7 +49,7 @@ class WebCrawlerLogic {
             }
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            gui.displayError("Save File Error: " + e.getMessage());
         }
     }
 
