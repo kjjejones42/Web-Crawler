@@ -16,14 +16,10 @@ class URLProcessor implements Runnable {
     private final URLProcessorManager executor;
     private final int depth;
 
-    URLProcessor(URL firstUrl, URLProcessorManager manager) {
-        this(firstUrl, manager, 0);
-    }
-
-    URLProcessor(URL firstUrl, URLProcessorManager manager, int depth){
-        this.rootUrl = firstUrl;
+    URLProcessor(URLResult firstUrl, URLProcessorManager manager){
+        this.rootUrl = firstUrl.url;
         this.executor = manager;
-        this.depth = depth;
+        this.depth = firstUrl.depth;
     }
     
     private List<URL> hrefsToURLs(List<String> input) {
@@ -97,11 +93,17 @@ class URLProcessor implements Runnable {
 
     @Override
     public void run() {
-        String html = getHTMLFromURL(rootUrl);
-        List<String> hrefs = getHrefsFromHTML(html);
-        List<URL> urls = hrefsToURLs(hrefs);
-        for (URL url : urls){
-            executor.addUrlToQueue(url, depth + 1);
-        }            
+        try {
+            String html = getHTMLFromURL(rootUrl);
+            List<String> hrefs = getHrefsFromHTML(html);
+            List<URL> urls = hrefsToURLs(hrefs);
+            for (URL url : urls){
+                executor.addUrlToQueue(new URLResult(url, depth + 1));
+            }                      
+        } catch (Exception e) {
+            System.err.println(rootUrl.toString() + " | " + e.getMessage());;
+        } finally {            
+            executor.incrementParsedURLs(rootUrl);  
+        }
     }
 }
