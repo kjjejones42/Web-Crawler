@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class WebCrawler extends JFrame {
 
     static final long serialVersionUID = 1;
-    static final int DEFAULT_DEPTH = 1;
+    static final int DEFAULT_DEPTH = URLProcessorManager.SAME_PAGE_ONLY;
     static final long DEFAULT_TIME = URLProcessorManager.NO_TIME_LIMIT;
 
     private final WebCrawlerLogic webCrawler;
@@ -32,7 +32,7 @@ public class WebCrawler extends JFrame {
     private URLProcessTimer timer;
     private int numWorkers; 
     private int maxDepth = DEFAULT_DEPTH; 
-    private long maxTime = DEFAULT_TIME;
+    private long maxTime = 120 * 1000;
     private boolean depthOption;
     private boolean timeOption;
 
@@ -181,7 +181,7 @@ public class WebCrawler extends JFrame {
             depthTextField.setText(Integer.toString(maxDepth));
             editables.add(depthTextField);
         } else {
-            depthTextField.setText(Integer.toString(DEFAULT_DEPTH));
+            depthTextField.setText("0 - Same page only.");
             editables.remove(depthTextField);
         }
     }
@@ -284,7 +284,7 @@ public class WebCrawler extends JFrame {
         resetLabelFields();
 
         setDepthOption(true);
-        setTimeOption(false);
+        setTimeOption(true);
 
         setVisible(true);
     }

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 class URLProcessorManager extends SwingWorker<Void, Void> {
 
     static final long NO_TIME_LIMIT = 0;
+    static final int SAME_PAGE_ONLY = 0;
 
     private final WebCrawlerLogic webCrawler;
     private final Queue<URLResult> urlQueue;
