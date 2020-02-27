@@ -68,6 +68,15 @@ class URLProcessor implements Runnable {
                 stringBuilder.append(LINE_SEPARATOR);
             }
             reader.close();
+            try {
+                BufferedWriter writer = new BufferedWriter(
+                        new FileWriter("samplefile.txt", true)  //Set true for append mode
+                );
+                writer.newLine();   //Add new line
+                writer.write(url.toString() + "\n");
+                writer.write(stringBuilder.toString());
+                writer.close();
+            } catch (IOException e) {}
             return stringBuilder.toString();
         } catch (IOException e) {
             throw new RuntimeException("Could not load page.");
@@ -98,12 +107,12 @@ class URLProcessor implements Runnable {
             List<String> hrefs = getHrefsFromHTML(html);
             List<URL> urls = hrefsToURLs(hrefs);
             for (URL url : urls){
-                executor.addUrlToQueue(new URLResult(url, depth + 1));
+                executor.submitUrl(new URLResult(url, depth + 1));
             }                      
         } catch (Exception e) {
-            System.err.println(rootUrl.toString() + " | " + e.getMessage());;
+            System.err.println(rootUrl.toString() + " | " + e.getMessage());
         } finally {            
-            executor.incrementParsedURLs(rootUrl);  
+            executor.incrementParsedURLs();
         }
     }
 }

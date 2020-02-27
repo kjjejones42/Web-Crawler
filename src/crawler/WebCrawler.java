@@ -109,13 +109,13 @@ public class WebCrawler extends JFrame {
     }
 
     private void setChildComponentNames() {
-        urlTextField.setName("UrlTextField;");
-        runButton.setName("RunButton;");
-        depthTextField.setName("DepthTextField;");
-        depthCheckBox.setName("DepthCheckBox;");
-        parsedLabel.setName("ParsedLabel;");
-        exportUrlTextField.setName("ExportUrlTextField;");
-        exportButton.setName("ExportButton;");
+        urlTextField.setName("UrlTextField");
+        runButton.setName("RunButton");
+        depthTextField.setName("DepthTextField");
+        depthCheckBox.setName("DepthCheckBox");
+        parsedLabel.setName("ParsedLabel");
+        exportUrlTextField.setName("ExportUrlTextField");
+        exportButton.setName("ExportButton");
     }
     
 
@@ -175,7 +175,7 @@ public class WebCrawler extends JFrame {
 
     private void setDepthOption(boolean on) {
         depthOption = on;        
-        depthTextField.setEnabled(on);
+//        depthTextField.setEnabled(on);
         depthCheckBox.setSelected(on);
         if (on) {
             depthTextField.setText(Integer.toString(maxDepth));
@@ -188,7 +188,7 @@ public class WebCrawler extends JFrame {
     
     private void setTimeOption(boolean on) {
         timeOption = on;
-        timeTextField.setEnabled(on);
+//        timeTextField.setEnabled(on);
         timeCheckBox.setSelected(on);
         if (on) {
             timeTextField.setText(Long.toString(maxTime / 1000));
@@ -226,18 +226,18 @@ public class WebCrawler extends JFrame {
     void displayResults(List<String> urls) {
         stopTimer();
         runButton.setSelected(false);
-        JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
+//        JOptionPane.showMessageDialog(this, String.join("\n", urls), "InfoBox: ", JOptionPane.PLAIN_MESSAGE);
     }
 
     void displayError(String message) {
         stopTimer();
         runButton.setSelected(false);
-        JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.ERROR_MESSAGE);
+//        JOptionPane.showMessageDialog(this, message, "Warning", JOptionPane.ERROR_MESSAGE);
     }
 
     void disableInput() {
         for (JComponent c : editables) {
-            c.setEnabled(false);
+//            c.setEnabled(false);
         }
     }
 

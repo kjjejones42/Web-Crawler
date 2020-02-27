@@ -18,8 +18,9 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
     private final int maxDepth;
     private final long endTime;
     private final ExecutorService executor;
+    private final URL rootUrl;
     
-    private volatile int parsedURLs = 0;
+    private int parsedURLs = 0;
 
     URLProcessorManager(URL rootUrl, WebCrawlerLogic webCrawler, int maxDepth, int workers, long maxTime) {
         this.endTime = maxTime == NO_TIME_LIMIT ? Long.MAX_VALUE : System.currentTimeMillis() + maxTime;
@@ -27,9 +28,10 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         this.maxDepth = maxDepth;
         this.foundUrls = ConcurrentHashMap.newKeySet();
         this.futures = new ArrayList<>();
+        this.rootUrl = rootUrl;
 
         this.urlQueue = new ConcurrentLinkedQueue<>();
-        addUrlToQueue(new URLResult(rootUrl, 0));
+        submitUrl(new URLResult(rootUrl, 1));
         executor = Executors.newFixedThreadPool(workers);
     }
     
@@ -60,7 +62,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         return a && !(b || c );
     }
     
-    void addUrlToQueue(URLResult result) {
+    void submitUrl(URLResult result) {
         if (result.url != null && !foundUrls.contains(result.url)) {
             foundUrls.add(result.url);
             if (result.depth <= maxDepth) {                
@@ -69,13 +71,13 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         }
     }
 
-    void incrementParsedURLs(URL url) {
+    synchronized void incrementParsedURLs() {
         parsedURLs++;
         updateParsedUrls();
     }
 
     void updateParsedUrls(){
-        webCrawler.updateCount(parsedURLs);     
+        webCrawler.updateCount(foundUrls.size());
     }
 
     URLResult getUrlFromQueue() {
@@ -83,7 +85,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
     }
 
     @Override
-    protected Void doInBackground() throws Exception {
+    protected Void doInBackground() {
         URLResult urlResult;
         do {
             if ((urlResult = getUrlFromQueue()) != null) {
@@ -99,6 +101,7 @@ class URLProcessorManager extends SwingWorker<Void, Void> {
         cancelFutures();
         executor.shutdown();
         List<String> result = foundUrls.stream().map(URL::toString).sorted().collect(Collectors.toList());      
+//        result.remove(rootUrl.toString());
         webCrawler.setUrls(result);
         updateParsedUrls();
     }

@@ -24,11 +24,11 @@ class WebCrawlerLogic {
             gui.displayError("The initial URL is invalid.");
         } else {
             gui.displayResults(urls);
+            gui.updateCount(urls.size());
         }
     }
 
     void updateCount(int count) {
-        gui.updateCount(count);
     }
 
     void processUrlFromUser(String text, int maxDepth, int workers, long maxTime) throws MalformedURLException {
