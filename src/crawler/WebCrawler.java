@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.util.concurrent.TimeUnit;
+import java.io.File;
 
 public class WebCrawler extends JFrame {
 
@@ -29,6 +30,7 @@ public class WebCrawler extends JFrame {
     private final JButton exportButton;
     private final List<JComponent> editables;
 
+    private String path = new File("").getAbsolutePath() +  System.getProperty("file.separator") + "results.txt";
     private URLProcessTimer timer;
     private int numWorkers; 
     private int maxDepth = DEFAULT_DEPTH; 
@@ -273,7 +275,7 @@ public class WebCrawler extends JFrame {
         timeCheckBox = new JCheckBox("Enabled");
         timeLabel = new JLabel();
         parsedLabel = new JLabel();
-        exportUrlTextField = new JTextField(System.getProperty("user.home") +  System.getProperty("file.separator") + "results.txt");
+        exportUrlTextField = new JTextField(path);
         exportButton = new JButton("Save");
 
         editables = new ArrayList<>(List.of(urlTextField, workersTextField, depthTextField, depthCheckBox, timeTextField, timeCheckBox, exportUrlTextField, exportButton));
@@ -283,8 +285,8 @@ public class WebCrawler extends JFrame {
         addChildComponents();
         resetLabelFields();
 
-        setDepthOption(true);
-        setTimeOption(true);
+        setDepthOption(false);
+        setTimeOption(false);
 
         setVisible(true);
     }
